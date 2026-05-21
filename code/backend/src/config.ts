@@ -21,7 +21,6 @@ const EnvSchema = z.object({
 export const config = EnvSchema.parse(process.env);
 export type AppConfig = typeof config;
 
-/** True once a real OAuth token (not the placeholder) is present. */
-export const hasMetrikaToken = (): boolean =>
-  config.YANDEX_OAUTH_TOKEN.length > 0 &&
-  config.YANDEX_OAUTH_TOKEN !== 'YOUR_OAUTH_TOKEN_HERE';
+/** True once a real OAuth token (not the placeholder) is present. Pure for testability. */
+export const hasMetrikaToken = (token: string = config.YANDEX_OAUTH_TOKEN): boolean =>
+  token.length > 0 && token !== 'YOUR_OAUTH_TOKEN_HERE';

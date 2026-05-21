@@ -1,16 +1,9 @@
-import Fastify, { type FastifyInstance } from 'fastify';
+import { buildServer } from './app';
 import { config } from './config';
-import { healthRoutes } from './routes/health';
 
-/** Build the Fastify app without listening — keeps it testable. */
-export function buildServer(): FastifyInstance {
-  const app = Fastify({ logger: true });
-  app.register(healthRoutes, { prefix: '/api' });
-  return app;
-}
-
+/** Entry point. Excluded from coverage — pure bootstrap. */
 async function main(): Promise<void> {
-  const app = buildServer();
+  const app = buildServer(true);
   try {
     await app.listen({ port: config.API_PORT, host: '0.0.0.0' });
   } catch (err) {
