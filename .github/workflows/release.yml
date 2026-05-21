@@ -1,0 +1,32 @@
+name: Release
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Package local-run archive
+        run: |
+          tar --exclude-vcs --exclude=node_modules --exclude=data \
+            -czf "productcamp-analytics-${GITHUB_REF_NAME}.tar.gz" \
+            code docs .claude run.sh package.json pnpm-workspace.yaml pnpm-lock.yaml \
+            tsconfig.base.json eslint.config.js .env.example README.md README.en.md CLAUDE.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: productcamp-analytics-*.tar.gz
+          generate_release_notes: true
