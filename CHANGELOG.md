@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-22
+
+> Итерация 22: обогащённый отчёт — топ-разбивки (UTM, гео+устройство, страницы входа/выхода) в DOCX/PDF.
+
 ### Added
 
 - Итерация 22 — **обогащённый отчёт**: в `ReportSnapshot` добавлены агрегированные топ-разбивки
@@ -150,7 +154,8 @@
 - GitHub workflows: `ci.yml` (lint/typecheck/coverage/build), `e2e.yml`, `review.yml` (AI code review), `release.yml`.
 - Шаблоны PR и Issue (bug, hypothesis), `dependabot.yml`.
 
-[Unreleased]: https://github.com/Fighter90/metrika_analyse_dashboard/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/Fighter90/metrika_analyse_dashboard/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/Fighter90/metrika_analyse_dashboard/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Fighter90/metrika_analyse_dashboard/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Fighter90/metrika_analyse_dashboard/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Fighter90/metrika_analyse_dashboard/compare/v0.1.0...v0.2.0
