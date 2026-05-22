@@ -6,6 +6,7 @@ import { formatInt, formatPercent } from '../lib/format';
 import { channelBarOption, channelRows, utmCoverage, utmRows } from '../lib/traffic';
 import { combineStatus, type QueryStatus } from '../lib/query-status';
 import { EChart } from '../components/charts/EChart';
+import { EmptyState } from '../components/EmptyState';
 
 /** Pure presentational Traffic view: channel mix + table, plus the UTM-breakdown table. */
 export function TrafficView({
@@ -24,6 +25,8 @@ export function TrafficView({
         Не удалось загрузить трафик.
       </p>
     );
+
+  if (stats.length === 0 && utm.length === 0) return <EmptyState />;
 
   const cov = utmCoverage(stats);
   const rows = channelRows(stats);

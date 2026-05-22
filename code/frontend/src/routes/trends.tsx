@@ -5,6 +5,7 @@ import { useFilters } from '../store/filters';
 import { formatInt, formatPercent } from '../lib/format';
 import { dailySeries, weekOverWeek, trendsOption } from '../lib/trends';
 import { EChart } from '../components/charts/EChart';
+import { EmptyState } from '../components/EmptyState';
 import type { QueryStatus } from '../lib/query-status';
 
 function WowStat({
@@ -43,6 +44,8 @@ export function TrendsView({
         Не удалось загрузить тренды.
       </p>
     );
+
+  if (stats.length === 0) return <EmptyState />;
 
   const series = dailySeries(stats);
   const wow = weekOverWeek(stats);

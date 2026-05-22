@@ -34,6 +34,11 @@ describe('BehaviorView', () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
+  it('shows an empty state when there are no pages', () => {
+    render(<BehaviorView status="success" entry={[]} exit={[]} />);
+    expect(screen.getByText(/Нет данных за выбранный период/)).toBeInTheDocument();
+  });
+
   it('renders the entry + exit page tables on success', () => {
     render(
       <BehaviorView
