@@ -8,6 +8,11 @@
 
 ### Added
 
+- Итерация 3 — Backend API: `/api/metrics/*` (channels с фильтром по датам, goals с тоглом
+  архивных, raw/:id), `/api/hypotheses` (CRUD; невалидная по Воронковой → 422; patch статуса),
+  `/api/decisions` (создание авто-обновляет статус гипотезы; без evidence → 422), `/api/b2b` (CRUD).
+  Репозитории инжектятся в Fastify (тестируемо на in-memory SQLite). Swagger на `/docs`.
+  109 тестов, 100% покрытие. (Fastify 4 → @fastify/swagger 8 / swagger-ui 2.)
 - Итерация 2 — Metrika-клиент: OAuth (`Authorization: OAuth`), token-bucket rate limiter,
   retry с экспоненциальным backoff + jitter, Zod-валидация с дампом ошибок в `data/errors/`,
   pino-логгер с редактированием токена. Запрос traffic-by-source + goals, дневные чанки для
