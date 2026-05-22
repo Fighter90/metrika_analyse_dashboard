@@ -3,6 +3,7 @@ import type {
   B2bStage,
   ChannelStat,
   Decision,
+  GeneratedHypotheses,
   Goal,
   Hypothesis,
   NewB2bDeal,
@@ -91,6 +92,11 @@ export const api = {
     http<{ filePath: string }>('/report/generate', { method: 'POST', body: JSON.stringify(body) }),
   generateInsights: (snapshotId: string) =>
     http<{ narrative: string }>('/report/insights', {
+      method: 'POST',
+      body: JSON.stringify({ snapshotId }),
+    }),
+  generateHypotheses: (snapshotId: string) =>
+    http<{ hypotheses: GeneratedHypotheses }>('/report/hypotheses', {
       method: 'POST',
       body: JSON.stringify({ snapshotId }),
     }),

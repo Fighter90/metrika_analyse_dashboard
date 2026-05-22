@@ -31,7 +31,7 @@ test('dashboard shell renders nav and every page is reachable', async ({ page })
   await expect(page.getByRole('button', { name: 'Добавить' })).toBeVisible();
 
   await page.getByRole('link', { name: 'Hypotheses' }).click();
-  await expect(page.getByRole('button', { name: /Сохранить гипотезу/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Сгенерировать гипотезы' })).toBeEnabled();
 
   await page.getByRole('link', { name: 'Decisions' }).click();
   await expect(page.getByRole('button', { name: /Сохранить решение/ })).toBeDisabled();
