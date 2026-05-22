@@ -25,6 +25,7 @@ describe('report routes', () => {
       build: vi.fn().mockReturnValue(snap),
       get: vi.fn(),
       generate: vi.fn(),
+      download: vi.fn(),
       insights: vi.fn(),
       hypotheses: vi.fn(),
     };
@@ -45,6 +46,7 @@ describe('report routes', () => {
       build: vi.fn(),
       get: vi.fn(),
       generate: vi.fn(),
+      download: vi.fn(),
       insights: vi.fn(),
       hypotheses: vi.fn(),
     } as ReportRunner);
@@ -62,6 +64,7 @@ describe('report routes', () => {
       build: vi.fn(),
       get: vi.fn((id: string) => (id === 'snap-1' ? snap : undefined)),
       generate: vi.fn(),
+      download: vi.fn(),
       insights: vi.fn(),
       hypotheses: vi.fn(),
     };
@@ -80,6 +83,7 @@ describe('report routes', () => {
       generate: vi.fn(async (id: string, format: string) =>
         id === 'snap-1' ? { filePath: `data/reports/snap-1.${format}` } : undefined,
       ),
+      download: vi.fn(),
       insights: vi.fn(),
       hypotheses: vi.fn(),
     };
@@ -122,6 +126,7 @@ describe('report routes', () => {
       build: vi.fn(),
       get: vi.fn(),
       generate: vi.fn(),
+      download: vi.fn(),
       insights: vi.fn(async (id: string) => {
         if (id === 'ok') return { ok: true as const, narrative: 'анализ' };
         if (id === 'missing')
@@ -165,6 +170,7 @@ describe('report routes', () => {
       build: vi.fn(),
       get: vi.fn(),
       generate: vi.fn(),
+      download: vi.fn(),
       insights: vi.fn(),
       hypotheses: vi.fn(async (id: string) => {
         if (id === 'ok') return { ok: true as const, hypotheses: fakeHypotheses };
@@ -198,6 +204,39 @@ describe('report routes', () => {
     expect(unavailable.statusCode).toBe(503);
 
     const bad = await app.inject({ method: 'POST', url: '/api/report/hypotheses', payload: {} });
+    expect(bad.statusCode).toBe(400);
+    await app.close();
+  });
+
+  it('GET /api/report/download streams bytes with attachment headers, 404 / 400 otherwise', async () => {
+    const runner: ReportRunner = {
+      build: vi.fn(),
+      get: vi.fn(),
+      generate: vi.fn(),
+      download: vi.fn(async (id: string, format: 'docx' | 'pdf') =>
+        id === 'snap-1'
+          ? {
+              body: Buffer.from('FILE-BYTES'),
+              filename: `productcamp-report-snap-1.${format}`,
+              contentType: format === 'pdf' ? 'application/pdf' : 'application/octet-stream',
+            }
+          : undefined,
+      ),
+      insights: vi.fn(),
+      hypotheses: vi.fn(),
+    };
+    const app = appWith(runner);
+
+    const ok = await app.inject({ method: 'GET', url: '/api/report/download/snap-1/docx' });
+    expect(ok.statusCode).toBe(200);
+    expect(ok.headers['content-disposition']).toContain('attachment');
+    expect(ok.headers['content-disposition']).toContain('productcamp-report-snap-1.docx');
+    expect(ok.body).toBe('FILE-BYTES');
+
+    const missing = await app.inject({ method: 'GET', url: '/api/report/download/none/pdf' });
+    expect(missing.statusCode).toBe(404);
+
+    const bad = await app.inject({ method: 'GET', url: '/api/report/download/snap-1/xlsx' });
     expect(bad.statusCode).toBe(400);
     await app.close();
   });
