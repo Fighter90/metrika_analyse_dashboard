@@ -4,6 +4,7 @@ import type {
   GeoDeviceStat,
   Goal,
   NewRawResponse,
+  PageStat,
   RawResponse,
   UtmStat,
 } from '@pca/shared';
@@ -82,6 +83,28 @@ function toGeoDeviceStat(r: GeoDeviceRow): GeoDeviceStat {
     device: r.device,
     visits: r.visits,
     users: r.users,
+    goalReaches: r.goal_reaches,
+    conversionRate: r.conversion_rate,
+  };
+}
+
+interface PageRow {
+  date: string;
+  page: string;
+  visits: number;
+  users: number;
+  bounce_rate: number;
+  goal_reaches: number;
+  conversion_rate: number;
+}
+
+function toPageStat(r: PageRow): PageStat {
+  return {
+    date: r.date,
+    page: r.page,
+    visits: r.visits,
+    users: r.users,
+    bounceRate: r.bounce_rate,
     goalReaches: r.goal_reaches,
     conversionRate: r.conversion_rate,
   };
@@ -283,5 +306,36 @@ export class MetricsRepo {
           .all(range.from, range.to) as GeoDeviceRow[])
       : (this.db.prepare('SELECT * FROM geo_device_stats ORDER BY date').all() as GeoDeviceRow[]);
     return rows.map(toGeoDeviceStat);
+  }
+
+  upsertPageStats(rows: readonly PageStat[]): void {
+    const stmt = this.db.prepare(
+      `INSERT OR REPLACE INTO page_stats
+         (date, page, visits, users, bounce_rate, goal_reaches, conversion_rate)
+       VALUES (@date, @page, @visits, @users, @bounce_rate, @goal_reaches, @conversion_rate)`,
+    );
+    const tx = this.db.transaction((items: readonly PageStat[]) => {
+      for (const p of items) {
+        stmt.run({
+          date: p.date,
+          page: p.page,
+          visits: p.visits,
+          users: p.users,
+          bounce_rate: p.bounceRate,
+          goal_reaches: p.goalReaches,
+          conversion_rate: p.conversionRate,
+        });
+      }
+    });
+    tx(rows);
+  }
+
+  listPageStats(range?: { from: string; to: string }): PageStat[] {
+    const rows = range
+      ? (this.db
+          .prepare('SELECT * FROM page_stats WHERE date >= ? AND date <= ? ORDER BY date')
+          .all(range.from, range.to) as PageRow[])
+      : (this.db.prepare('SELECT * FROM page_stats ORDER BY date').all() as PageRow[]);
+    return rows.map(toPageStat);
   }
 }

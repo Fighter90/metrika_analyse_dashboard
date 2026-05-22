@@ -11,6 +11,7 @@ import type {
   ReportSnapshot,
   UtmStat,
   GeoDeviceStat,
+  PageStat,
 } from '@pca/shared';
 
 const BASE = '/api';
@@ -37,6 +38,7 @@ export interface SyncSummary {
   channelRows: number;
   utmRows: number;
   geoDeviceRows: number;
+  pageRows: number;
 }
 
 async function http<T>(path: string, init?: RequestInit): Promise<T> {
@@ -59,6 +61,8 @@ export const api = {
     http<GeoDeviceStat[]>(
       `/metrics/geo-device${range ? `?from=${range.from}&to=${range.to}` : ''}`,
     ),
+  pages: (range?: { from: string; to: string }) =>
+    http<PageStat[]>(`/metrics/pages${range ? `?from=${range.from}&to=${range.to}` : ''}`),
   goals: (archived = false) => http<Goal[]>(`/metrics/goals${archived ? '?archived=true' : ''}`),
   hypotheses: () => http<Hypothesis[]>('/hypotheses'),
   createHypothesis: (h: NewHypothesis) =>

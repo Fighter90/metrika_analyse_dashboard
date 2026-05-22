@@ -79,6 +79,21 @@ export interface GeoDeviceStat {
   readonly conversionRate: number;
 }
 
+/**
+ * Entry-page (landing) behaviour, in its own table (`page_stats`) — same rationale as the other
+ * breakdowns: a distinct aggregation kept apart so visits aren't double-counted. `page` is the
+ * `ym:s:startURL` dimension; missing values are normalised to {@link DIMENSION_NONE}.
+ */
+export interface PageStat {
+  readonly date: string;
+  readonly page: string;
+  readonly visits: number;
+  readonly users: number;
+  readonly bounceRate: number;
+  readonly goalReaches: number;
+  readonly conversionRate: number;
+}
+
 export type B2bStage = 'lead' | 'negotiation' | 'invoiced' | 'paid';
 
 export interface NewB2bDeal {

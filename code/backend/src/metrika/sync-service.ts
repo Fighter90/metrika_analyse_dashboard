@@ -8,6 +8,7 @@ import { GoalsResponseSchema } from './schemas';
 import { trafficBySource } from './queries/traffic-by-source';
 import { utmBreakdown } from './queries/utm-breakdown';
 import { geoDeviceBreakdown } from './queries/geo-device-breakdown';
+import { pageBehavior } from './queries/page-behavior';
 
 export interface SyncDeps {
   readonly client: MetrikaClient;
@@ -25,6 +26,7 @@ export interface SyncSummary {
   readonly channelRows: number;
   readonly utmRows: number;
   readonly geoDeviceRows: number;
+  readonly pageRows: number;
 }
 
 /** Pulls Metrika data into SQLite: raw responses (for traceability) + derived channel stats. */
@@ -125,11 +127,43 @@ export class SyncService {
     return { rows };
   }
 
+  async syncPages(from: string, to: string, goalId?: number): Promise<{ rows: number }> {
+    const chunks = dayChunks(from, to);
+    let rows = 0;
+    for (const chunk of chunks) {
+      const { raw, stats } = await pageBehavior(this.deps.client, {
+        counterId: this.deps.counterId,
+        from: chunk.from,
+        to: chunk.to,
+        goalId,
+      });
+      this.deps.metrics.saveRawResponse({
+        endpoint: ENDPOINTS.statData,
+        queryHash: stableHash({ q: 'page-behavior', goalId, from: chunk.from, to: chunk.to }),
+        dateFrom: chunk.from,
+        dateTo: chunk.to,
+        payload: raw,
+        fetchedAt: this.deps.now(),
+      });
+      this.deps.metrics.upsertPageStats(stats);
+      rows += stats.length;
+    }
+    return { rows };
+  }
+
   async syncAll(from: string, to: string, goalId?: number): Promise<SyncSummary> {
     const goals = await this.syncGoals();
     const { days, rows } = await this.syncTraffic(from, to, goalId);
     const utm = await this.syncUtm(from, to, goalId);
     const geo = await this.syncGeoDevice(from, to, goalId);
-    return { goals, days, channelRows: rows, utmRows: utm.rows, geoDeviceRows: geo.rows };
+    const pages = await this.syncPages(from, to, goalId);
+    return {
+      goals,
+      days,
+      channelRows: rows,
+      utmRows: utm.rows,
+      geoDeviceRows: geo.rows,
+      pageRows: pages.rows,
+    };
   }
 }
