@@ -11,6 +11,7 @@ import {
   type AudienceRow,
 } from '../lib/audience';
 import { EChart } from '../components/charts/EChart';
+import { EmptyState } from '../components/EmptyState';
 import type { QueryStatus } from '../lib/query-status';
 
 function AudienceTable({ title, rows }: { title: string; rows: AudienceRow[] }): JSX.Element {
@@ -58,6 +59,8 @@ export function AudienceView({
         Не удалось загрузить аудиторию.
       </p>
     );
+
+  if (stats.length === 0) return <EmptyState />;
 
   const countries = byCountry(stats);
   const devices = byDevice(stats);

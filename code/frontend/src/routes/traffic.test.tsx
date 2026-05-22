@@ -63,6 +63,11 @@ describe('TrafficView', () => {
     expect(screen.getByText('spring')).toBeInTheDocument();
   });
 
+  it('shows an empty state when there is no traffic data', () => {
+    render(<TrafficView status="success" stats={[]} utm={[]} />);
+    expect(screen.getByText(/Нет данных за выбранный период/)).toBeInTheDocument();
+  });
+
   it('hides the badge when UTM coverage is high', () => {
     render(<TrafficView status="success" stats={[stat({ utmSource: 'podcast' })]} utm={[]} />);
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
