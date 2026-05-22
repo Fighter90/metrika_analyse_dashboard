@@ -52,9 +52,11 @@ describe('api client', () => {
       return ok({ id: 1 });
     });
     await api.createHypothesis({ title: 'x' } as never);
+    await api.createDecision({ scope: 'd' } as never);
     await api.sync({ from: 'a', to: 'b', goalId: 80 });
     expect(seen[0]?.method).toBe('POST');
-    expect(String(seen[1]?.body)).toContain('goalId');
+    expect(seen[1]?.method).toBe('POST');
+    expect(String(seen[2]?.body)).toContain('goalId');
   });
 
   it('B2B mutations use the right method, path and body', async () => {
