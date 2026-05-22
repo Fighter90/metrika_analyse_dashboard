@@ -1,0 +1,40 @@
+import type { PageStat } from '@pca/shared';
+
+export interface PageRow {
+  readonly page: string;
+  readonly visits: number;
+  readonly users: number;
+  readonly bounceRate: number;
+  readonly goalReaches: number;
+  readonly conversionRate: number;
+}
+
+/**
+ * Aggregate entry-page stats (per-day) by page, highest visits first. bounceRate is visit-weighted
+ * across days; conversionRate = reaches / visits. Pure so it is fully unit-testable.
+ */
+export function pageRows(stats: PageStat[]): PageRow[] {
+  const map = new Map<
+    string,
+    { visits: number; users: number; goalReaches: number; bounceVisits: number }
+  >();
+  for (const s of stats) {
+    const cur = map.get(s.page) ?? { visits: 0, users: 0, goalReaches: 0, bounceVisits: 0 };
+    map.set(s.page, {
+      visits: cur.visits + s.visits,
+      users: cur.users + s.users,
+      goalReaches: cur.goalReaches + s.goalReaches,
+      bounceVisits: cur.bounceVisits + s.bounceRate * s.visits,
+    });
+  }
+  return [...map.entries()]
+    .map(([page, v]) => ({
+      page,
+      visits: v.visits,
+      users: v.users,
+      goalReaches: v.goalReaches,
+      bounceRate: v.visits === 0 ? 0 : v.bounceVisits / v.visits,
+      conversionRate: v.visits === 0 ? 0 : v.goalReaches / v.visits,
+    }))
+    .sort((a, b) => b.visits - a.visits);
+}

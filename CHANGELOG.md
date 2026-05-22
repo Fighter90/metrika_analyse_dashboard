@@ -6,6 +6,16 @@
 
 ## [Unreleased]
 
+### Added
+
+- Итерация 15 — **поведение страниц** (расширение парсера) и страница **Behavior**: новый запрос Stat
+  API `page-behavior` (`ym:s:startURL` + `ym:s:bounceRate`), отдельная таблица `page_stats`
+  (migration 008) с историей по дням и репозиторием (`upsertPageStats`/`listPageStats`), интеграция
+  в `SyncService.syncPages` + `syncAll` (поле `pageRows` в `SyncSummary`), эндпоинт
+  `GET /api/metrics/pages`, клиент `api.pages()` и страница **Behavior** в навигации (таблица страниц
+  входа с визит-взвешенным показателем отказов и CR, агрегатор `pageRows`). Своя таблица — чтобы не
+  дублировать визиты. 100% покрытие; e2e проверяет страницу Behavior.
+
 ## [0.2.0] - 2026-05-22
 
 > Дашборд-итерации 8–13: отчёты (DOCX/PDF), Funnel, расширение парсера (UTM, гео/девайс) и страница Audience.
