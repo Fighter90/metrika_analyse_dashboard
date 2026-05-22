@@ -3,7 +3,13 @@ import type { ChannelStat, UtmStat } from '@pca/shared';
 import { api } from '../lib/api';
 import { useFilters } from '../store/filters';
 import { formatInt, formatPercent } from '../lib/format';
-import { channelBarOption, channelRows, utmCoverage, utmRows } from '../lib/traffic';
+import {
+  channelBarOption,
+  channelVisitsVsReachesOption,
+  channelRows,
+  utmCoverage,
+  utmRows,
+} from '../lib/traffic';
 import { combineStatus, type QueryStatus } from '../lib/query-status';
 import { EChart } from '../components/charts/EChart';
 import { EmptyState } from '../components/EmptyState';
@@ -41,6 +47,12 @@ export function TrafficView({
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <h2 className="mb-2 text-lg font-semibold">Каналы — визиты</h2>
         <EChart option={channelBarOption(rows)} />
+      </div>
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <h2 className="mb-2 text-lg font-semibold">
+          Каналы — визиты vs заявки (какой трафик конвертит)
+        </h2>
+        <EChart option={channelVisitsVsReachesOption(rows)} />
       </div>
       <table className="w-full text-sm">
         <thead>
