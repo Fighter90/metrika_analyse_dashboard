@@ -1,318 +1,220 @@
-import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  ASSUMPTION_CATEGORIES,
-  VALIDATION_METHOD_TYPES,
-  iceBucket,
-  iceScore,
-  validateHypothesis,
-  type Hypothesis,
-  type IceBucket,
-  type NewHypothesis,
-  type ValidationMethodType,
-} from '@pca/shared';
+import { useMutation } from '@tanstack/react-query';
+import type { GeneratedHypotheses, ProblemHypothesis, SolutionHypothesis } from '@pca/shared';
 import { api } from '../lib/api';
-import {
-  daysToDeadline,
-  emptyForm,
-  formToInput,
-  type HypothesisForm,
-} from '../lib/hypothesis-form';
+import { useFilters } from '../store/filters';
+import { errorMessage } from '../lib/error-message';
 
-const BUCKET_CLASS: Record<IceBucket, string> = {
-  low: 'bg-slate-200 text-slate-700',
-  medium: 'bg-yellow-200 text-yellow-900',
-  high: 'bg-orange-200 text-orange-900',
-  top: 'bg-red-300 text-red-900',
-};
+export type GenStatus = 'idle' | 'pending' | 'error' | 'success';
 
-export type QueryStatus = 'pending' | 'error' | 'success';
+// ─── Sub-components ──────────────────────────────────────────────────────────
 
-function IceBadge({ score }: { score: number }): JSX.Element {
-  return (
-    <span className={`rounded px-2 py-0.5 text-xs font-semibold ${BUCKET_CLASS[iceBucket(score)]}`}>
-      {score}
-    </span>
-  );
+function IceBadge({ score }: { readonly score: number }): JSX.Element {
+  const cls =
+    score >= 500
+      ? 'bg-red-300 text-red-900'
+      : score >= 200
+        ? 'bg-orange-200 text-orange-900'
+        : score >= 50
+          ? 'bg-yellow-200 text-yellow-900'
+          : 'bg-slate-200 text-slate-700';
+  return <span className={`rounded px-2 py-0.5 text-xs font-semibold ${cls}`}>{score}</span>;
 }
 
-function HypothesisList({ hypotheses }: { hypotheses: Hypothesis[] }): JSX.Element {
-  if (hypotheses.length === 0) return <p className="text-slate-500">Гипотез пока нет.</p>;
+function ProblemCard({ p }: { readonly p: ProblemHypothesis }): JSX.Element {
   return (
-    <table className="w-full text-sm">
-      <thead>
-        <tr className="text-left text-slate-500">
-          <th className="py-1">#</th>
-          <th>Заголовок</th>
-          <th>Фаза</th>
-          <th>Статус</th>
-          <th>ICE</th>
-          <th>Дней до дедлайна</th>
-        </tr>
-      </thead>
-      <tbody>
-        {hypotheses.map((h) => (
-          <tr key={h.id} className="border-t border-slate-100">
-            <td className="py-1">{h.id}</td>
-            <td>{h.title}</td>
-            <td>{h.diamondPhase}</td>
-            <td>{h.status}</td>
-            <td>
-              <IceBadge score={h.iceScore} />
-            </td>
-            <td>{daysToDeadline(h.deadlineAt)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}): JSX.Element {
-  return (
-    <label className="block text-sm">
-      {label}
-      <input
-        aria-label={label}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-0.5 block w-full rounded border border-slate-300 px-2 py-1"
-      />
-    </label>
-  );
-}
-
-/** Structured hypothesis editor. Save is gated by the shared validateHypothesis. */
-export function HypothesisEditor({
-  onCreate,
-}: {
-  onCreate: (input: NewHypothesis) => void;
-}): JSX.Element {
-  const [form, setForm] = useState<HypothesisForm>(emptyForm());
-  const set = (patch: Partial<HypothesisForm>): void => setForm((f) => ({ ...f, ...patch }));
-
-  const input = formToInput(form);
-  const result = validateHypothesis(input);
-  const score = iceScore(form.impact, form.confidence, form.ease);
-
-  const submit = (e: React.FormEvent): void => {
-    e.preventDefault();
-    if (!result.ok) return;
-    onCreate(input);
-    setForm(emptyForm());
-  };
-
-  const assumptionKey = { behavior: 'behavior', market: 'market', tech: 'tech' } as const;
-
-  return (
-    <form aria-label="Новая гипотеза" onSubmit={submit} className="space-y-3">
-      <h2 className="text-lg font-semibold">Новая гипотеза (формат Воронковой)</h2>
-      <div className="grid grid-cols-2 gap-2">
-        <Field label="Subject (ЦА)" value={form.subject} onChange={(v) => set({ subject: v })} />
-        <Field label="Action" value={form.action} onChange={(v) => set({ action: v })} />
-        <Field label="Solution" value={form.solution} onChange={(v) => set({ solution: v })} />
-        <Field
-          label="Condition (если)"
-          value={form.condition}
-          onChange={(v) => set({ condition: v })}
-        />
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-1">
+      <div className="flex items-center gap-2">
+        <span className="rounded bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-800">
+          {p.id}
+        </span>
+        <span className="text-xs text-slate-500">Проблема</span>
       </div>
-      <Field label="Title" value={form.title} onChange={(v) => set({ title: v })} />
-
-      <fieldset className="rounded border border-slate-200 p-2">
-        <legend className="text-sm font-medium">Скрытые допущения (≥3, все категории)</legend>
-        {ASSUMPTION_CATEGORIES.map((c) => (
-          <Field
-            key={c}
-            label={`Допущение: ${c}`}
-            value={form[assumptionKey[c]]}
-            onChange={(v) => set({ [assumptionKey[c]]: v })}
-          />
-        ))}
-      </fieldset>
-
-      <fieldset className="rounded border border-slate-200 p-2">
-        <legend className="text-sm font-medium">Методы проверки (≥2 разных)</legend>
-        <MethodRow
-          n={1}
-          type={form.method1Type}
-          plan={form.method1Plan}
-          onType={(t) => set({ method1Type: t })}
-          onPlan={(p) => set({ method1Plan: p })}
-        />
-        <MethodRow
-          n={2}
-          type={form.method2Type}
-          plan={form.method2Plan}
-          onType={(t) => set({ method2Type: t })}
-          onPlan={(p) => set({ method2Plan: p })}
-        />
-      </fieldset>
-
-      <div className="grid grid-cols-3 gap-2">
-        <IceInput label="Impact" value={form.impact} onChange={(n) => set({ impact: n })} />
-        <IceInput
-          label="Confidence"
-          value={form.confidence}
-          onChange={(n) => set({ confidence: n })}
-        />
-        <IceInput label="Ease" value={form.ease} onChange={(n) => set({ ease: n })} />
-        <Field
-          label="Impact rationale"
-          value={form.impactRationale}
-          onChange={(v) => set({ impactRationale: v })}
-        />
-        <Field
-          label="Confidence rationale"
-          value={form.confidenceRationale}
-          onChange={(v) => set({ confidenceRationale: v })}
-        />
-        <Field
-          label="Ease rationale"
-          value={form.easeRationale}
-          onChange={(v) => set({ easeRationale: v })}
-        />
-      </div>
-      <p className="text-sm">
-        ICE = I × C × E = <IceBadge score={score} />
+      <p className="text-sm font-medium text-slate-800">
+        <span className="font-semibold">{p.segment}</span> испытывает{' '}
+        <span className="italic">{p.trouble}</span> при <span className="italic">{p.action}</span>,
+        потому что <span className="italic">{p.barrier}</span>
       </p>
-
-      <div className="grid grid-cols-3 gap-2">
-        <Field label="🟢 Green" value={form.green} onChange={(v) => set({ green: v })} />
-        <Field label="🟡 Yellow" value={form.yellow} onChange={(v) => set({ yellow: v })} />
-        <Field label="🔴 Red" value={form.red} onChange={(v) => set({ red: v })} />
-      </div>
-      <IceInput
-        label="Дней на проверку"
-        value={form.deadlineDays}
-        onChange={(n) => set({ deadlineDays: n })}
-      />
-
-      {result.ok ? null : (
-        <ul className="rounded bg-red-50 p-2 text-xs text-red-700" aria-label="Ошибки валидации">
-          {result.errors.map((err) => (
-            <li key={err}>{err}</li>
-          ))}
-        </ul>
-      )}
-
-      <button
-        type="submit"
-        disabled={!result.ok}
-        className="rounded bg-indigo-600 px-4 py-1.5 text-white disabled:opacity-40"
-      >
-        Сохранить гипотезу
-      </button>
-    </form>
-  );
-}
-
-function MethodRow({
-  n,
-  type,
-  plan,
-  onType,
-  onPlan,
-}: {
-  n: number;
-  type: ValidationMethodType;
-  plan: string;
-  onType: (t: ValidationMethodType) => void;
-  onPlan: (p: string) => void;
-}): JSX.Element {
-  return (
-    <div className="flex gap-2">
-      <select
-        aria-label={`Метод ${n} тип`}
-        value={type}
-        onChange={(e) => onType(e.target.value as ValidationMethodType)}
-        className="rounded border border-slate-300 px-1"
-      >
-        {VALIDATION_METHOD_TYPES.map((t) => (
-          <option key={t} value={t}>
-            {t}
-          </option>
-        ))}
-      </select>
-      <input
-        aria-label={`Метод ${n} план`}
-        value={plan}
-        onChange={(e) => onPlan(e.target.value)}
-        className="flex-1 rounded border border-slate-300 px-2 py-1"
-      />
+      <p className="text-xs text-slate-500">
+        <span className="font-medium">Обоснование:</span> {p.evidence}
+      </p>
     </div>
   );
 }
 
-function IceInput({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  onChange: (n: number) => void;
-}): JSX.Element {
+function SolutionCard({ s }: { readonly s: SolutionHypothesis }): JSX.Element {
   return (
-    <label className="block text-sm">
-      {label}
-      <input
-        aria-label={label}
-        type="number"
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-0.5 block w-full rounded border border-slate-300 px-2 py-1"
-      />
-    </label>
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="rounded bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-800">
+          {s.id}
+        </span>
+        <span className="text-xs text-slate-500">→ {s.problemId}</span>
+        <IceBadge score={s.ice.score} />
+        <span className="text-xs text-slate-400">
+          I={s.ice.impact} × C={s.ice.confidence} × E={s.ice.ease}
+        </span>
+      </div>
+
+      <p className="text-sm font-medium text-slate-800">
+        Если <span className="italic">{s.action}</span>, то пользователи смогут{' '}
+        <span className="italic">{s.userBenefit}</span>, что приведёт к{' '}
+        <span className="italic">{s.businessResult}</span>
+      </p>
+
+      <p className="text-xs text-slate-600">
+        <span className="font-medium">Критерий успеха:</span> {s.successCriteria}
+      </p>
+
+      <div className="space-y-0.5">
+        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Риски</p>
+        {s.risks.map((r) => (
+          <p key={r.kind} className="text-xs text-slate-600">
+            <span className="font-medium capitalize">{r.kind}:</span> {r.note}
+          </p>
+        ))}
+      </div>
+
+      <div className="space-y-0.5">
+        <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">План проверки</p>
+        <p className="text-xs text-slate-600">
+          <span className="font-medium">Что проверяем:</span> {s.validation.whatToVerify}
+        </p>
+        <p className="text-xs text-slate-600">
+          <span className="font-medium">Методы:</span> {s.validation.methods.join(', ')}
+        </p>
+        <p className="text-xs text-slate-600">
+          <span className="font-medium">Аудитория:</span> {s.validation.audience}
+        </p>
+        <p className="text-xs text-slate-600">
+          <span className="font-medium">Канал рекрутинга:</span> {s.validation.channel}
+        </p>
+        <p className="text-xs text-slate-600">
+          <span className="font-medium">Успех:</span> {s.validation.successCriteria}
+        </p>
+      </div>
+
+      <div className="space-y-0.5 border-t border-slate-100 pt-1">
+        <p className="text-xs text-slate-500">
+          Impact: {s.ice.impactRationale} · Confidence: {s.ice.confidenceRationale} · Ease:{' '}
+          {s.ice.easeRationale}
+        </p>
+      </div>
+    </div>
   );
 }
 
-/** Pure view: list + editor. */
+// ─── Pure view ───────────────────────────────────────────────────────────────
+
+export interface HypothesesViewProps {
+  readonly status: GenStatus;
+  readonly hypotheses: GeneratedHypotheses | undefined;
+  readonly genError: string | undefined;
+  readonly onGenerate: () => void;
+}
+
+/** Pure presentational view — all states: idle/pending/error/success. */
 export function HypothesesView({
   status,
   hypotheses,
-  onCreate,
-}: {
-  status: QueryStatus;
-  hypotheses: Hypothesis[];
-  onCreate: (input: NewHypothesis) => void;
-}): JSX.Element {
+  genError,
+  onGenerate,
+}: HypothesesViewProps): JSX.Element {
+  const sortedSolutions = hypotheses
+    ? [...hypotheses.solutions].sort((a, b) => b.ice.score - a.ice.score)
+    : [];
+
   return (
     <section className="space-y-6">
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 className="mb-2 text-lg font-semibold">Гипотезы (по ICE)</h2>
-        {status === 'pending' ? <p className="text-slate-500">Загрузка…</p> : null}
-        {status === 'error' ? (
-          <p role="alert" className="text-red-600">
-            Не удалось загрузить гипотезы.
-          </p>
-        ) : null}
-        {status === 'success' ? <HypothesisList hypotheses={hypotheses} /> : null}
+      <div className="flex items-center gap-3">
+        <h2 className="text-lg font-semibold">AI-гипотезы</h2>
+        <button
+          type="button"
+          onClick={onGenerate}
+          disabled={status === 'pending'}
+          className="rounded bg-indigo-600 px-3 py-1.5 text-sm text-white disabled:opacity-40"
+        >
+          {status === 'pending' ? 'Генерирую…' : 'Сгенерировать гипотезы'}
+        </button>
       </div>
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <HypothesisEditor onCreate={onCreate} />
-      </div>
+
+      {genError ? (
+        <p role="alert" className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+          {genError}
+        </p>
+      ) : null}
+
+      {status === 'idle' ? (
+        <p className="text-slate-500">
+          Нажмите «Сгенерировать гипотезы», чтобы получить AI-анализ за выбранный период.
+        </p>
+      ) : null}
+
+      {status === 'success' && hypotheses ? (
+        <>
+          <div className="space-y-3">
+            <h3 className="font-semibold text-slate-700">
+              Проблемы ({hypotheses.problems.length})
+            </h3>
+            {hypotheses.problems.length === 0 ? (
+              <p className="text-sm text-slate-500">Проблем-гипотез не найдено.</p>
+            ) : (
+              hypotheses.problems.map((p) => <ProblemCard key={p.id} p={p} />)
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="font-semibold text-slate-700">
+              Решения ({sortedSolutions.length}) — отсортированы по ICE
+            </h3>
+            {sortedSolutions.length === 0 ? (
+              <p className="text-sm text-slate-500">Решений-гипотез не найдено.</p>
+            ) : (
+              sortedSolutions.map((s) => <SolutionCard key={s.id} s={s} />)
+            )}
+          </div>
+        </>
+      ) : null}
     </section>
   );
 }
 
-/** Data + mutation wrapper. */
+// ─── Data wrapper ─────────────────────────────────────────────────────────────
+
+/** Data + mutation wrapper: builds a snapshot, then generates hypotheses. */
 export function Hypotheses(): JSX.Element {
-  const qc = useQueryClient();
-  const q = useQuery({ queryKey: ['hypotheses'], queryFn: () => api.hypotheses() });
-  const createMut = useMutation({
-    mutationFn: api.createHypothesis,
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['hypotheses'] });
-    },
+  const { from, to } = useFilters();
+  const buildMut = useMutation({ mutationFn: api.buildSnapshot });
+  const genMut = useMutation({
+    mutationFn: (snapshotId: string) => api.generateHypotheses(snapshotId),
   });
-  return <HypothesesView status={q.status} hypotheses={q.data ?? []} onCreate={createMut.mutate} />;
+
+  const handleGenerate = (): void => {
+    buildMut.mutate(
+      { from, to },
+      {
+        onSuccess: (snapshot) => {
+          genMut.mutate(snapshot.id);
+        },
+      },
+    );
+  };
+
+  const isPending = buildMut.isPending || genMut.isPending;
+  const error = buildMut.error ?? genMut.error;
+  const status: GenStatus = isPending
+    ? 'pending'
+    : error
+      ? 'error'
+      : genMut.data
+        ? 'success'
+        : 'idle';
+
+  return (
+    <HypothesesView
+      status={status}
+      hypotheses={genMut.data?.hypotheses}
+      genError={errorMessage(error)}
+      onGenerate={handleGenerate}
+    />
+  );
 }

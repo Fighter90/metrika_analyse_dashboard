@@ -253,6 +253,55 @@ export async function installMocks(page: Page, opts: MockOptions = {}): Promise<
   await page.route('**/api/report/insights', (r) =>
     json(r, { narrative: 'AI-анализ: визиты растут, конверсия стабильна.' }),
   );
+  await page.route('**/api/report/hypotheses', (r) =>
+    json(r, {
+      hypotheses: {
+        problems: [
+          {
+            id: 'P01',
+            segment: 'мобильный посетитель',
+            trouble: 'не завершает оплату',
+            action: 'покупке билета',
+            barrier: 'форма оплаты не адаптирована',
+            evidence: '68% мобильного трафика, CR 1.2%',
+          },
+        ],
+        solutions: [
+          {
+            id: 'S01',
+            problemId: 'P01',
+            action: 'заменим форму оплаты',
+            userBenefit: 'оплатить в 2 клика',
+            businessResult: 'росту CR +150%',
+            successCriteria: 'CR mobile ≥ 3% через 14 дней',
+            risks: [
+              { kind: 'value', note: 'Пользователи не ценят скорость' },
+              { kind: 'usability', note: 'Новая форма может путать' },
+              { kind: 'feasibility', note: 'Интеграция шлюза' },
+              { kind: 'business', note: 'Нужен бюджет' },
+              { kind: 'legal', note: '152-ФЗ' },
+            ],
+            validation: {
+              whatToVerify: 'Готовность к новой форме',
+              methods: ['интервью', 'A/B тест'],
+              audience: 'мобильные посетители',
+              channel: 'email',
+              successCriteria: '≥60% подтверждают удобство',
+            },
+            ice: {
+              impact: 9,
+              confidence: 7,
+              ease: 6,
+              impactRationale: 'Крупнейший сегмент',
+              confidenceRationale: 'Данные убедительны',
+              easeRationale: 'Готовая библиотека',
+              score: 378,
+            },
+          },
+        ],
+      },
+    }),
+  );
   await page.route('**/api/report/generate', (r) => {
     const body = JSON.parse(r.request().postData() ?? '{}') as { format?: string };
     const ext = body.format === 'pdf' ? 'pdf' : 'docx';
