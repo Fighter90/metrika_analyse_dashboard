@@ -38,6 +38,17 @@ export function makeReportRunner(builder: SnapshotBuilder, snapshots: SnapshotRe
       writeFileSync(filePath, buf);
       return { filePath };
     },
+    download: async (snapshotId, format) => {
+      const record = snapshots.getById(snapshotId);
+      if (!record) return undefined;
+      const snapshot = record.payload as ReportSnapshot;
+      const body = format === 'pdf' ? await buildPdf(snapshot) : await buildDocx(snapshot);
+      const contentType =
+        format === 'pdf'
+          ? 'application/pdf'
+          : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      return { body, filename: `productcamp-report-${snapshotId}.${format}`, contentType };
+    },
     insights: async (snapshotId) => {
       const record = snapshots.getById(snapshotId);
       if (!record) return { ok: false, reason: 'not_found', message: 'snapshot not found' };

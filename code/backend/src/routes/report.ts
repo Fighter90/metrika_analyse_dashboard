@@ -17,10 +17,19 @@ export type HypothesesResult =
   | { ok: true; hypotheses: GeneratedHypotheses }
   | { ok: false; reason: 'not_found' | 'unavailable'; message: string };
 
+/** A generated report file ready to stream to the browser as a download. */
+export interface ReportDownload {
+  readonly body: Buffer;
+  readonly filename: string;
+  readonly contentType: string;
+}
+
 export interface ReportRunner {
   build: (opts: { from: string; to: string }) => ReportSnapshot;
   get: (id: string) => ReportSnapshot | undefined;
   generate: (snapshotId: string, format: ReportFormat) => Promise<{ filePath: string } | undefined>;
+  /** Render a snapshot to DOCX/PDF bytes for download (undefined when the snapshot is missing). */
+  download: (snapshotId: string, format: ReportFormat) => Promise<ReportDownload | undefined>;
   /** Generate + persist the AI narrative for a snapshot. */
   insights: (snapshotId: string) => Promise<InsightsResult>;
   /** Generate + persist the AI hypotheses for a snapshot. */
@@ -49,6 +58,19 @@ export async function reportRoutes(app: FastifyInstance, opts: ReportRouteOption
     if (!parsed.success) return reply.code(400).send({ error: 'invalid body' });
     const result = await opts.runner.generate(parsed.data.snapshotId, parsed.data.format);
     return result ?? reply.code(404).send({ error: 'snapshot not found' });
+  });
+
+  app.get('/report/download/:snapshotId/:format', async (req, reply) => {
+    const params = z
+      .object({ snapshotId: z.string(), format: z.enum(['docx', 'pdf']) })
+      .safeParse(req.params);
+    if (!params.success) return reply.code(400).send({ error: 'invalid format' });
+    const file = await opts.runner.download(params.data.snapshotId, params.data.format);
+    if (!file) return reply.code(404).send({ error: 'snapshot not found' });
+    return reply
+      .header('content-type', file.contentType)
+      .header('content-disposition', `attachment; filename="${file.filename}"`)
+      .send(file.body);
   });
 
   app.post('/report/insights', async (req, reply) => {

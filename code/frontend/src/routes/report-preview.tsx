@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { useFilters } from '../store/filters';
 import { formatInt } from '../lib/format';
 import { errorMessage } from '../lib/error-message';
+import { downloadFile, reportDownloadUrl } from '../lib/download';
 
 function Stat({ label, value }: { label: string; value: string }): JSX.Element {
   return (
@@ -52,8 +53,6 @@ export interface ReportPreviewProps {
   snapshot: ReportSnapshot | undefined;
   isPending: boolean;
   onBuild: () => void;
-  exportPending: boolean;
-  exportedPath: string | undefined;
   onExport: (snapshotId: string, format: 'docx' | 'pdf') => void;
   insightsPending: boolean;
   narrative: string | undefined;
@@ -66,8 +65,6 @@ export function ReportPreviewView({
   snapshot,
   isPending,
   onBuild,
-  exportPending,
-  exportedPath,
   onExport,
   insightsPending,
   narrative,
@@ -109,23 +106,26 @@ export function ReportPreviewView({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => onExport(snapshot.id, 'docx')}
-              disabled={exportPending}
-              className="rounded border border-indigo-600 px-3 py-1 text-sm text-indigo-700 disabled:opacity-40"
+              onClick={onBuild}
+              disabled={isPending}
+              className="rounded border border-slate-400 px-3 py-1 text-sm text-slate-700 disabled:opacity-40"
             >
-              {exportPending ? 'Экспорт…' : 'Export DOCX'}
+              {isPending ? 'Перестраиваю…' : 'Перестроить отчёт'}
+            </button>
+            <button
+              type="button"
+              onClick={() => onExport(snapshot.id, 'docx')}
+              className="rounded border border-indigo-600 px-3 py-1 text-sm text-indigo-700"
+            >
+              Export DOCX
             </button>
             <button
               type="button"
               onClick={() => onExport(snapshot.id, 'pdf')}
-              disabled={exportPending}
-              className="rounded border border-rose-600 px-3 py-1 text-sm text-rose-700 disabled:opacity-40"
+              className="rounded border border-rose-600 px-3 py-1 text-sm text-rose-700"
             >
-              {exportPending ? 'Экспорт…' : 'Export PDF'}
+              Export PDF
             </button>
-            {exportedPath ? (
-              <span className="text-xs text-green-700">Сохранено: {exportedPath}</span>
-            ) : null}
           </div>
 
           <div className="space-y-2 border-t border-slate-100 pt-3">
@@ -165,20 +165,17 @@ export function ReportPreviewView({
   );
 }
 
-/** Data wrapper: builds a snapshot, then exports it to DOCX. */
+/** Data wrapper: builds/rebuilds a snapshot and downloads DOCX/PDF to the user's computer. */
 export function ReportPreview(): JSX.Element {
   const { from, to } = useFilters();
   const buildMut = useMutation({ mutationFn: api.buildSnapshot });
-  const exportMut = useMutation({ mutationFn: api.generateReport });
   const insightsMut = useMutation({ mutationFn: api.generateInsights });
   return (
     <ReportPreviewView
       snapshot={buildMut.data}
       isPending={buildMut.isPending}
       onBuild={() => buildMut.mutate({ from, to })}
-      exportPending={exportMut.isPending}
-      exportedPath={exportMut.data?.filePath}
-      onExport={(snapshotId, format) => exportMut.mutate({ snapshotId, format })}
+      onExport={(snapshotId, format) => downloadFile(reportDownloadUrl(snapshotId, format))}
       insightsPending={insightsMut.isPending}
       narrative={insightsMut.data?.narrative}
       insightsError={errorMessage(insightsMut.error)}

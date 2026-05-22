@@ -4,9 +4,14 @@ import type { ReportSnapshot } from '@pca/shared';
 import { renderWithProviders } from '../test/utils';
 
 vi.mock('../lib/api', () => ({
-  api: { buildSnapshot: vi.fn(), generateReport: vi.fn(), generateInsights: vi.fn() },
+  api: { buildSnapshot: vi.fn(), generateInsights: vi.fn() },
+}));
+vi.mock('../lib/download', () => ({
+  downloadFile: vi.fn(),
+  reportDownloadUrl: (id: string, format: string) => `/api/report/download/${id}/${format}`,
 }));
 import { api } from '../lib/api';
+import { downloadFile } from '../lib/download';
 import { ReportPreviewView, ReportPreview } from './report-preview';
 
 const snapshot: ReportSnapshot = {
@@ -24,8 +29,6 @@ const baseProps = {
   snapshot: undefined,
   isPending: false,
   onBuild: vi.fn(),
-  exportPending: false,
-  exportedPath: undefined,
   onExport: vi.fn(),
   insightsPending: false,
   narrative: undefined,
@@ -50,27 +53,22 @@ describe('ReportPreviewView', () => {
     render(<ReportPreviewView {...baseProps} snapshot={snapshot} onExport={onExport} />);
     expect(screen.getByText(/snapshot snap-1/)).toBeInTheDocument();
     expect(screen.getByText('Заявки B2C')).toBeInTheDocument();
-    expect(screen.queryByText(/Сохранено/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Export DOCX' }));
     expect(onExport).toHaveBeenCalledWith('snap-1', 'docx');
     fireEvent.click(screen.getByRole('button', { name: 'Export PDF' }));
     expect(onExport).toHaveBeenCalledWith('snap-1', 'pdf');
   });
 
-  it('shows the exported path and disables export while pending', () => {
+  it('rebuilds the report and reflects pending state', () => {
+    const onBuild = vi.fn();
     const { rerender } = render(
-      <ReportPreviewView
-        {...baseProps}
-        snapshot={snapshot}
-        exportedPath="data/reports/snap-1.docx"
-      />,
+      <ReportPreviewView {...baseProps} snapshot={snapshot} onBuild={onBuild} />,
     );
-    expect(screen.getByText(/Сохранено: data\/reports\/snap-1\.docx/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Перестроить отчёт' }));
+    expect(onBuild).toHaveBeenCalled();
 
-    rerender(<ReportPreviewView {...baseProps} snapshot={snapshot} exportPending />);
-    const exporting = screen.getAllByRole('button', { name: 'Экспорт…' });
-    expect(exporting).toHaveLength(2);
-    exporting.forEach((btn) => expect(btn).toBeDisabled());
+    rerender(<ReportPreviewView {...baseProps} snapshot={snapshot} isPending />);
+    expect(screen.getByRole('button', { name: 'Перестраиваю…' })).toBeDisabled();
   });
 
   it('triggers AI insights, shows pending, the narrative, and an error', () => {
@@ -97,17 +95,15 @@ describe('ReportPreviewView', () => {
 describe('ReportPreview (wrapper)', () => {
   beforeEach(() => {
     vi.mocked(api.buildSnapshot).mockResolvedValue(snapshot);
-    vi.mocked(api.generateReport).mockResolvedValue({ filePath: 'data/reports/snap-1.docx' });
   });
 
-  it('builds a snapshot then exports it', async () => {
+  it('builds a snapshot then downloads the DOCX export', async () => {
     renderWithProviders(<ReportPreview />);
     fireEvent.click(screen.getByRole('button', { name: 'Сформировать snapshot' }));
     expect(await screen.findByText(/snapshot snap-1/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Export DOCX' }));
-    expect(await screen.findByText(/Сохранено/)).toBeInTheDocument();
-    expect(api.generateReport).toHaveBeenCalled();
+    expect(downloadFile).toHaveBeenCalledWith('/api/report/download/snap-1/docx');
   });
 
   it('generates an AI narrative for the snapshot', async () => {

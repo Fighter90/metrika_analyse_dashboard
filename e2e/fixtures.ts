@@ -308,5 +308,17 @@ export async function installMocks(page: Page, opts: MockOptions = {}): Promise<
     return json(r, { filePath: `data/reports/snap-e2e.${ext}` });
   });
 
+  await page.route('**/api/report/download/**', (r) => {
+    const ext = r.request().url().endsWith('/pdf') ? 'pdf' : 'docx';
+    return r.fulfill({
+      status: 200,
+      headers: {
+        'content-type': ext === 'pdf' ? 'application/pdf' : 'application/octet-stream',
+        'content-disposition': `attachment; filename="productcamp-report-snap-e2e.${ext}"`,
+      },
+      body: 'FILE-BYTES',
+    });
+  });
+
   return state;
 }

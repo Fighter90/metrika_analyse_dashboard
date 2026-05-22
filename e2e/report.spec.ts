@@ -26,10 +26,17 @@ test.describe('Report — snapshot, on-screen render, export, AI', () => {
     await page.getByRole('button', { name: 'Сформировать snapshot' }).click();
     await expect(page.getByText(/snapshot snap-e2e/)).toBeVisible();
 
-    await page.getByRole('button', { name: 'Export DOCX' }).click();
-    await expect(page.getByText(/Сохранено: data\/reports\/snap-e2e\.docx/)).toBeVisible();
-    await page.getByRole('button', { name: 'Export PDF' }).click();
-    await expect(page.getByText(/Сохранено: data\/reports\/snap-e2e\.pdf/)).toBeVisible();
+    const [docx] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: 'Export DOCX' }).click(),
+    ]);
+    expect(docx.suggestedFilename()).toBe('productcamp-report-snap-e2e.docx');
+
+    const [pdf] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: 'Export PDF' }).click(),
+    ]);
+    expect(pdf.suggestedFilename()).toBe('productcamp-report-snap-e2e.pdf');
 
     await page.getByRole('button', { name: 'Сгенерировать AI-анализ' }).click();
     await expect(page.getByText(/AI-анализ: визиты растут/)).toBeVisible();
