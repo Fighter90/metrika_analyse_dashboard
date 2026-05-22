@@ -8,6 +8,9 @@
 
 ### Added
 
+- Итерация 8 — страница **Report Preview**: кнопка «Сформировать snapshot» (`POST /api/report/snapshot`
+  за выбранный период) и сводка (KPI заявка/оплата, счётчики каналов/гипотез/решений, период и время
+  генерации) — то же, что пойдёт в DOCX/PDF. Пункт Report в навигации. 100% покрытие, e2e.
 - Итерация 8 (старт) — отчётность (бэкенд): `SnapshotBuilder` собирает неизменяемый `ReportSnapshot`
   из БД (KPI «заявка ≠ оплата»: b2cApplications vs b2bPaidTickets, gap; каналы за период; гипотезы
   problem/solution; решения) — детерминированно (id + generatedAt на входе). Роуты
