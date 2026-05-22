@@ -79,6 +79,26 @@ beforeAll(() => {
       conversionRate: 0.05,
     },
   ]);
+  ctx.deps.metrics.upsertPageStats([
+    {
+      date: '2025-01-01',
+      page: '/lp',
+      visits: 70,
+      users: 60,
+      bounceRate: 0.25,
+      goalReaches: 4,
+      conversionRate: 0.05,
+    },
+    {
+      date: '2025-01-09',
+      page: '/pricing',
+      visits: 25,
+      users: 22,
+      bounceRate: 0.4,
+      goalReaches: 1,
+      conversionRate: 0.04,
+    },
+  ]);
 });
 afterAll(async () => {
   await ctx.app.close();
@@ -119,6 +139,18 @@ describe('GET /api/metrics', () => {
     });
     expect(ranged.json()).toHaveLength(1);
     expect(ranged.json()[0].country).toBe('Россия');
+  });
+
+  it('returns all page stats, and a date-filtered subset', async () => {
+    const all = await ctx.app.inject({ method: 'GET', url: '/api/metrics/pages' });
+    expect(all.json()).toHaveLength(2);
+
+    const ranged = await ctx.app.inject({
+      method: 'GET',
+      url: '/api/metrics/pages?from=2025-01-01&to=2025-01-05',
+    });
+    expect(ranged.json()).toHaveLength(1);
+    expect(ranged.json()[0].page).toBe('/lp');
   });
 
   it('hides archived goals by default, includes them with ?archived=true', async () => {

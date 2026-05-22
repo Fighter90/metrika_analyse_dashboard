@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import type { DB } from '../../src/db/connection';
 import { MetricsRepo } from '../../src/db/repositories/metrics-repo';
 import { freshDb } from './helpers';
-import type { ChannelStat, GeoDeviceStat, Goal, UtmStat } from '@pca/shared';
+import type { ChannelStat, GeoDeviceStat, Goal, PageStat, UtmStat } from '@pca/shared';
 
 let db: DB;
 let repo: MetricsRepo;
@@ -154,5 +154,31 @@ describe('MetricsRepo — geo/device stats', () => {
     expect(ranged.map((g) => g.date)).toEqual(['2025-01-02', '2025-01-03']);
     expect(ranged[0]?.device).toBe('desktop');
     expect(ranged[0]?.goalReaches).toBe(6);
+  });
+});
+
+const page = (date: string, over: Partial<PageStat> = {}): PageStat => ({
+  date,
+  page: '/lp',
+  visits: 100,
+  users: 90,
+  bounceRate: 0.3,
+  goalReaches: 5,
+  conversionRate: 0.05,
+  ...over,
+});
+
+describe('MetricsRepo — page stats', () => {
+  it('upserts and lists page stats, optionally filtered by date range', () => {
+    repo.upsertPageStats([
+      page('2025-01-01'),
+      page('2025-01-02', { page: '/pricing' }),
+      page('2025-01-03'),
+    ]);
+    expect(repo.listPageStats()).toHaveLength(3);
+    const ranged = repo.listPageStats({ from: '2025-01-02', to: '2025-01-03' });
+    expect(ranged.map((p) => p.date)).toEqual(['2025-01-02', '2025-01-03']);
+    expect(ranged[0]?.page).toBe('/pricing');
+    expect(ranged[0]?.bounceRate).toBe(0.3);
   });
 });
