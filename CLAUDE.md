@@ -111,6 +111,42 @@
   `v*.*.*` (`release.yml`).
 - **Ревью:** AI code-review в CI на каждый PR (`.github/workflows/review.yml`).
 
+## Структура и архитектура репозитория
+
+Полный гид по папкам — `docs/project-structure.md`; поток данных и слои — `docs/architecture.md`;
+модель БД — `docs/data-model.md`.
+
+- `code/backend` — Fastify API, Metrika-клиент, SQLite (миграции + repository pattern), аналитика, отчёты.
+- `code/frontend` — React 18 + Vite дашборд.
+- `code/shared` (`@pca/shared`) — типы, `ICE_CONFIG`, Voronkova-валидация (общие для backend и UI).
+- `.claude/skills/` — 4 skill-промпта методологии: `hypothesis-check`, `synthetic-custdev`,
+  `market-scan`, `decision-log` (адаптированы из репозитория Воронковой, с атрибуцией).
+- `.github/` — пайплайны (`ci`, `security`, `e2e`, `pr-lint`, `review`, `release`), `CODEOWNERS`,
+  `dependabot.yml`, шаблоны PR/Issue.
+- `docs/` — архитектура, модель данных, методология (DD/Воронкова/ICE), anti-hallucination,
+  runbook, user-guide, ADR (`decisions/`), EN-зеркала (`en/`).
+- `data/` — SQLite + отчёты + экспорт DL (gitignored, кроме `.gitkeep`).
+
+Поток: `./run.sh` → миграции → `pnpm sync` (Метрика → SQLite) → Fastify API (`/api/*`, Swagger
+`/docs`) → React-дашборд (TanStack Query) → SnapshotBuilder → DOCX/PDF. Текущий релиз — **v0.1.0**.
+
+## Как работать в этом репозитории (для AI-агентов)
+
+- **Методология обязательна.** Гипотеза — строго формат Воронковой
+  (`docs/methodology-hypothesis-voronik.md`), ICE = произведение (`docs/methodology-ice.md`),
+  цикл Double Diamond (`docs/methodology-double-diamond.md`). Менять методологию из
+  `.claude/skills/` — только с записью в `methodology-hypothesis-voronik.md` и reasoning.
+- **Anti-hallucination** (`docs/anti-hallucination.md`): любое число → `raw_responses`; никакого
+  `Date.now()`/LLM в render-пути отчёта; заявка ≠ оплата; B2B входит в KPI 300.
+- **100% покрытие** (`docs/testing-strategy.md`): каждая фича — с тестами; CI гоняет
+  `pnpm coverage` с порогом 100%.
+- **Поток работы:** ветка под итерацию → Conventional Commits → локальный гейт
+  (`lint` / `format:check` / `typecheck` / `coverage` / `build`) → merge в `main` →
+  **следить за пайплайнами** (`gh run list`) и чинить красное.
+- **Зависимости вне зафиксированного стека — только через ADR** в `docs/decisions/`.
+- **Запуск:** `docs/runbook.md`; дашборд и отчёты: `docs/user-guide.md`; API Метрики:
+  `docs/metrika-api-cheatsheet.md`.
+
 ## Decision Log (последние 3 решения)
 
 > Заполняется после каждого цикла проверки гипотезы. Полные записи — `data/decisions/DL-*.md` и таблица `decisions` в SQLite.
