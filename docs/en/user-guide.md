@@ -34,6 +34,7 @@ B2C / B2C+B2B / B2B toggle, show-archived-goals toggle, "Sync now" button.
 | **Audience**   | traffic split by country and device category: visits / users / applications / CR                                         |
 | **Funnel**     | «application ≠ payment» funnel: Visits → B2C applications → B2B tickets (pipeline) → B2B paid, stage-by-stage conversion |
 | **Behavior**   | entry (startURL) and exit (exitURL) pages: visits / users / bounce rate / applications / CR                              |
+| **Trends**     | daily visits & applications dynamics + week-over-week (WoW) comparison with arrows                                       |
 | **Forms**      | per form: opens / started / submitted / biggest-dropout field                                                            |
 | **B2B**        | deals CRUD table, pipeline by stage, forecast                                                                            |
 | **Hypotheses** | Double Diamond + Voronkova hypothesis editor (below)                                                                     |
