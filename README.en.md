@@ -109,7 +109,7 @@ packages a local-run archive on `v*.*.*` tags. Versioning: SemVer + Conventional
 - [x] **Iteration 0** — skeleton, skills, CLAUDE.md, run.sh, CI, test pyramid.
 - [x] **1** — SQLite + migrations 001–005 + repository pattern + tests.
 - [x] **2** — Metrika client (OAuth, Zod, rate limiter, retry) + `POST /api/sync`.
-- [ ] **3** — Backend API (metrics/hypotheses/decisions/b2b) + Swagger.
+- [x] **3** — Backend API (metrics/hypotheses/decisions/b2b) + Swagger.
 - [ ] **4–5** — Dashboard: Overview, Traffic, Funnel, Behavior, Forms, B2B.
 - [ ] **6** — Hypotheses (Voronkova format, validations, ICE-product, ICEScatter).
 - [ ] **7** — Decisions (Decision Log, status auto-update, .md export).
