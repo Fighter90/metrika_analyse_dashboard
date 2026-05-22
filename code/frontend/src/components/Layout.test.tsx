@@ -18,6 +18,7 @@ describe('Layout', () => {
     // 'B2B' also appears as a FilterBar segment option, so match the nav link specifically.
     expect(screen.getByRole('link', { name: 'B2B' })).toBeInTheDocument();
     expect(screen.getByText('Decisions')).toBeInTheDocument();
+    expect(screen.getByText('Report')).toBeInTheDocument();
     expect(screen.getByText('HOME CONTENT')).toBeInTheDocument();
   });
 });
