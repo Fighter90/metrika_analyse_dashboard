@@ -34,6 +34,11 @@ describe('TrendsView', () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
+  it('shows an empty state when there is no data', () => {
+    render(<TrendsView status="success" stats={[]} />);
+    expect(screen.getByText(/Нет данных за выбранный период/)).toBeInTheDocument();
+  });
+
   it('renders WoW stats (up + down arrows) and the chart on success', () => {
     // current week visits drop vs previous → visits delta negative (▼); reaches rise → ▲.
     const stats: ChannelStat[] = [];

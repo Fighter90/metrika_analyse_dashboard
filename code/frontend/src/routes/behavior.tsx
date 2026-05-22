@@ -5,6 +5,7 @@ import { useFilters } from '../store/filters';
 import { formatInt, formatPercent } from '../lib/format';
 import { pageRows, pageBarOption, type PageRow } from '../lib/behavior';
 import { EChart } from '../components/charts/EChart';
+import { EmptyState } from '../components/EmptyState';
 import { combineStatus, type QueryStatus } from '../lib/query-status';
 
 function PageTable({ title, rows }: { title: string; rows: PageRow[] }): JSX.Element {
@@ -56,6 +57,8 @@ export function BehaviorView({
         Не удалось загрузить поведение.
       </p>
     );
+
+  if (entry.length === 0 && exit.length === 0) return <EmptyState />;
 
   const entryRows = pageRows(entry);
   const exitRows = pageRows(exit);

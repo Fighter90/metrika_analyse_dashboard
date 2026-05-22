@@ -30,6 +30,11 @@ describe('AudienceView', () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
+  it('shows an empty state when there is no data', () => {
+    render(<AudienceView status="success" stats={[]} />);
+    expect(screen.getByText(/Нет данных за выбранный период/)).toBeInTheDocument();
+  });
+
   it('renders the country + device tables on success', () => {
     render(
       <AudienceView status="success" stats={[geo({ country: 'Россия', device: 'mobile' })]} />,
