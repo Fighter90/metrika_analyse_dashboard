@@ -8,5 +8,6 @@ function ComingSoon({ title, iteration }: { title: string; iteration: string }):
   );
 }
 
-export const Funnel = (): JSX.Element => <ComingSoon title="Funnel" iteration="итерации 5" />;
-export const Decisions = (): JSX.Element => <ComingSoon title="Decisions" iteration="итерации 7" />;
+export const Funnel = (): JSX.Element => (
+  <ComingSoon title="Funnel" iteration="следующих итерациях" />
+);
