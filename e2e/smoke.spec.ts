@@ -156,6 +156,10 @@ test('dashboard shell renders nav + Overview KPI', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Страницы выхода' })).toBeVisible();
   await expect(page.getByText('/checkout')).toBeVisible();
 
+  // Navigate to the Trends page (reuses channel data) and confirm the time-series renders.
+  await page.getByRole('link', { name: 'Trends' }).click();
+  await expect(page.getByText('Динамика по дням')).toBeVisible();
+
   // Navigate to the Funnel page and confirm the «заявка ≠ оплата» stages render.
   await page.getByRole('link', { name: 'Funnel' }).click();
   await expect(page.getByText('Воронка конверсии')).toBeVisible();
