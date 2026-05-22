@@ -8,6 +8,7 @@ import type {
   NewB2bDeal,
   NewDecision,
   NewHypothesis,
+  ReportSnapshot,
 } from '@pca/shared';
 
 const BASE = '/api';
@@ -64,6 +65,8 @@ export const api = {
       body: JSON.stringify({ stage: input.stage, datePaid: input.datePaid }),
     }),
   removeB2b: (id: number) => http<void>(`/b2b/${id}`, { method: 'DELETE' }),
+  buildSnapshot: (body: { from: string; to: string }) =>
+    http<ReportSnapshot>('/report/snapshot', { method: 'POST', body: JSON.stringify(body) }),
   sync: (body: { from: string; to: string; goalId?: number }) =>
     http<SyncSummary>('/sync', { method: 'POST', body: JSON.stringify(body) }),
 };

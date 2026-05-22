@@ -8,6 +8,7 @@ const NAV = [
   ['/b2b', 'B2B'],
   ['/hypotheses', 'Hypotheses'],
   ['/decisions', 'Decisions'],
+  ['/report', 'Report'],
 ] as const;
 
 /** App shell: top nav + sticky filters + routed content. */

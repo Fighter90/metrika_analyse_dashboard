@@ -61,4 +61,8 @@ test('dashboard shell renders nav + Overview KPI', async ({ page }) => {
   // Navigate to Decisions and confirm the Decision Log editor blocks save while empty.
   await page.getByRole('link', { name: 'Decisions' }).click();
   await expect(page.getByRole('button', { name: /Сохранить решение/ })).toBeDisabled();
+
+  // Navigate to Report preview and confirm the build prompt.
+  await page.getByRole('link', { name: 'Report' }).click();
+  await expect(page.getByRole('button', { name: 'Сформировать snapshot' })).toBeVisible();
 });
