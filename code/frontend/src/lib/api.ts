@@ -6,6 +6,7 @@ import type {
   Goal,
   Hypothesis,
   NewB2bDeal,
+  NewDecision,
   NewHypothesis,
 } from '@pca/shared';
 
@@ -52,6 +53,8 @@ export const api = {
   createHypothesis: (h: NewHypothesis) =>
     http<Hypothesis>('/hypotheses', { method: 'POST', body: JSON.stringify(h) }),
   decisions: () => http<Decision[]>('/decisions'),
+  createDecision: (d: NewDecision) =>
+    http<Decision>('/decisions', { method: 'POST', body: JSON.stringify(d) }),
   b2b: () => http<B2bDeal[]>('/b2b'),
   createB2b: (deal: NewB2bDeal) =>
     http<B2bDeal>('/b2b', { method: 'POST', body: JSON.stringify(deal) }),

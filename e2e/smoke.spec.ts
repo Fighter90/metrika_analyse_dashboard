@@ -34,6 +34,9 @@ test('dashboard shell renders nav + Overview KPI', async ({ page }) => {
   await page.route('**/api/hypotheses', (route) =>
     route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
   );
+  await page.route('**/api/decisions', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
+  );
 
   await page.goto('/');
 
@@ -54,4 +57,8 @@ test('dashboard shell renders nav + Overview KPI', async ({ page }) => {
   // Navigate to Hypotheses and confirm the Voronkova editor blocks save while empty.
   await page.getByRole('link', { name: 'Hypotheses' }).click();
   await expect(page.getByRole('button', { name: /Сохранить гипотезу/ })).toBeDisabled();
+
+  // Navigate to Decisions and confirm the Decision Log editor blocks save while empty.
+  await page.getByRole('link', { name: 'Decisions' }).click();
+  await expect(page.getByRole('button', { name: /Сохранить решение/ })).toBeDisabled();
 });

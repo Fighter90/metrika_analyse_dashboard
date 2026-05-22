@@ -6,7 +6,8 @@ import { Overview } from './routes/overview';
 import { Traffic } from './routes/traffic';
 import { B2b } from './routes/b2b';
 import { Hypotheses } from './routes/hypotheses';
-import { Funnel, Decisions } from './routes/placeholders';
+import { Decisions } from './routes/decisions';
+import { Funnel } from './routes/placeholders';
 
 export function App(): JSX.Element {
   return (
