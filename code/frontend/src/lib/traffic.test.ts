@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import type { ChannelStat, UtmStat } from '@pca/shared';
-import { utmCoverage, channelRows, channelBarOption, utmRows } from './traffic';
+import {
+  utmCoverage,
+  channelRows,
+  channelBarOption,
+  channelVisitsVsReachesOption,
+  utmRows,
+} from './traffic';
 
 function stat(over: Partial<ChannelStat>): ChannelStat {
   return {
@@ -104,5 +110,21 @@ describe('channelBarOption', () => {
     };
     expect(o.xAxis.data).toEqual(['podcast']);
     expect(o.series[0]?.data).toEqual([10]);
+  });
+});
+
+describe('channelVisitsVsReachesOption', () => {
+  it('builds a two-series (visits + applications) grouped bar with a legend', () => {
+    const rows = channelRows([stat({ channel: 'podcast', visits: 10, goalReaches: 3 })]);
+    const o = channelVisitsVsReachesOption(rows) as {
+      legend: { data: string[] };
+      xAxis: { data: string[] };
+      series: { name: string; data: number[] }[];
+    };
+    expect(o.legend.data).toEqual(['Визиты', 'Заявки']);
+    expect(o.xAxis.data).toEqual(['podcast']);
+    expect(o.series.map((s) => s.name)).toEqual(['Визиты', 'Заявки']);
+    expect(o.series[0]?.data).toEqual([10]);
+    expect(o.series[1]?.data).toEqual([3]);
   });
 });

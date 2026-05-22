@@ -19,7 +19,8 @@ test.describe('Read-only dashboard pages render their data', () => {
   test('Traffic: channel chart + UTM table', async ({ page }) => {
     await installMocks(page);
     await page.goto('/traffic');
-    await expect(page.getByText('Каналы — визиты')).toBeVisible();
+    await expect(page.getByText('Каналы — визиты', { exact: true })).toBeVisible();
+    await expect(page.getByText(/Каналы — визиты vs заявки/)).toBeVisible();
     await expect(page.getByText('UTM-разбивка')).toBeVisible();
     await expect(page.getByRole('cell', { name: 'podcast' })).toBeVisible();
     await expect(page.locator('canvas').first()).toBeVisible();
