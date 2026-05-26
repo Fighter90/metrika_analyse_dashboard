@@ -188,9 +188,10 @@ describe('reportSections — structure', () => {
 
   it('renders the funnel with visit→application conversion (заявка ≠ оплата)', () => {
     const lines = findSection(baseSnapshot, (h) => h.startsWith('Воронка')).join('\n');
-    expect(lines).toContain('Визиты (сумма по каналам за период): 100');
-    expect(lines).toContain('конверсия визит→заявка 7.0%');
-    expect(lines).toContain('Оплачено B2B (билетов): 20');
+    expect(lines).toContain('Этап 1: Визиты — 100');
+    expect(lines).toContain('Этап 2: Заявки B2C — 7');
+    expect(lines).toContain('CR 7.0%');
+    expect(lines).toContain('Оплачено B2B — 20 билетов');
     expect(lines).toContain('Gap до цели');
   });
 
