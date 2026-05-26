@@ -497,9 +497,10 @@ describe('reportSections — new sections', () => {
   });
 
   it('renders detailed channel analysis section', () => {
-    const lines = reportSections(baseSnapshot)
-      .find((sec) => sec.heading === 'Анализ по каналам (детальный)')
-      ?.lines.join('\n') ?? '';
+    const lines =
+      reportSections(baseSnapshot)
+        .find((sec) => sec.heading === 'Анализ по каналам (детальный)')
+        ?.lines.join('\n') ?? '';
     expect(lines).toContain('podcast');
     expect(lines).toContain('Визиты: 100');
   });
