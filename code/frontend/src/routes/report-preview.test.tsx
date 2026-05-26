@@ -73,6 +73,7 @@ describe('ReportPreviewView', () => {
     render(<ReportPreviewView {...baseProps} snapshot={snapshot} onExport={onExport} />);
     expect(screen.getByText(/snapshot snap-1/)).toBeInTheDocument();
     expect(screen.getByText('Заявки B2C')).toBeInTheDocument();
+    expect(screen.getByText(/не сгенерированы/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Export DOCX' }));
     expect(onExport).toHaveBeenCalledWith('snap-1', 'docx');
     fireEvent.click(screen.getByRole('button', { name: 'Export PDF' }));
