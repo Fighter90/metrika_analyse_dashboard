@@ -25,7 +25,7 @@ export interface ReportDownload {
 }
 
 export interface ReportRunner {
-  build: (opts: { from: string; to: string }) => ReportSnapshot;
+  build: (opts: { from: string; to: string }) => Promise<ReportSnapshot>;
   get: (id: string) => ReportSnapshot | undefined;
   list: () => Array<{ id: string; generatedAt: string; dateFrom: string; dateTo: string }>;
   generate: (snapshotId: string, format: ReportFormat) => Promise<{ filePath: string } | undefined>;
@@ -33,7 +33,7 @@ export interface ReportRunner {
   download: (snapshotId: string, format: ReportFormat) => Promise<ReportDownload | undefined>;
   /** Generate + persist the AI narrative for a snapshot. */
   insights: (snapshotId: string) => Promise<InsightsResult>;
-  /** Generate + persist the AI hypotheses for a snapshot. */
+  /** Generate + persist the AI hypotheses for a snapshot (returns existing if already generated). */
   hypotheses: (snapshotId: string) => Promise<HypothesesResult>;
 }
 
@@ -46,7 +46,8 @@ export async function reportRoutes(app: FastifyInstance, opts: ReportRouteOption
   app.post('/report/snapshot', async (req, reply) => {
     const parsed = SnapshotBody.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: 'invalid body' });
-    return reply.code(201).send(opts.runner.build(parsed.data));
+    const snapshot = await opts.runner.build(parsed.data);
+    return reply.code(201).send(snapshot);
   });
 
   app.get('/report/snapshot/:id', async (req, reply) => {

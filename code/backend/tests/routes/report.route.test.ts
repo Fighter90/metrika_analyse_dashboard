@@ -11,6 +11,14 @@ const snap = {
   channels: [],
   hypotheses: { problems: [], solutions: [] },
   decisions: [],
+  b2bSummary: {
+    totalTickets: 20,
+    paidTickets: 20,
+    dealsCount: 1,
+    deals: [{ company: 'BigCorp', tickets: 20, stage: 'paid' }],
+    byStage: [{ stage: 'paid', tickets: 20, deals: 1 }],
+  },
+  funnel: { visits: 100, b2cApplications: 7, b2bPipelineTickets: 0, b2bPaidTickets: 20 },
 } as unknown as ReportSnapshot;
 
 function appWith(runner: ReportRunner): FastifyInstance {
@@ -22,7 +30,7 @@ function appWith(runner: ReportRunner): FastifyInstance {
 describe('report routes', () => {
   it('POST /api/report/snapshot builds and returns a snapshot', async () => {
     const runner: ReportRunner = {
-      build: vi.fn().mockReturnValue(snap),
+      build: vi.fn().mockResolvedValue(snap),
       get: vi.fn(),
       list: vi.fn().mockReturnValue([]),
       generate: vi.fn(),

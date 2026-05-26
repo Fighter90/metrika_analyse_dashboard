@@ -135,6 +135,14 @@ const baseSnapshot: ReportSnapshot = {
     solutions: [hyp({ id: 2, kind: 'solution' })],
   },
   decisions: [decision()],
+  b2bSummary: {
+    totalTickets: 20,
+    paidTickets: 20,
+    dealsCount: 1,
+    deals: [{ company: 'BigCorp', tickets: 20, stage: 'paid' }],
+    byStage: [{ stage: 'paid', tickets: 20, deals: 1 }],
+  },
+  funnel: { visits: 100, b2cApplications: 7, b2bPipelineTickets: 0, b2bPaidTickets: 20 },
   breakdowns: { utm: [], geoDevice: [], entryPages: [], exitPages: [] },
 };
 

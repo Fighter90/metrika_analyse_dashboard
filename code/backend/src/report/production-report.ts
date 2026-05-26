@@ -17,14 +17,51 @@ const REPORTS_DIR = 'data/reports';
  * Production report runner: builds + persists snapshots and writes DOCX/PDF files to data/reports.
  * Excluded from coverage — IO + non-deterministic id/clock (SnapshotBuilder, buildDocx and reportHtml
  * are tested; buildPdf launches a real browser and is also coverage-excluded).
+ *
+ * Auto-generates AI hypotheses during build (if ANTHROPIC_API_KEY is set).
  */
-export function makeReportRunner(builder: SnapshotBuilder, snapshots: SnapshotRepo): ReportRunner {
+export function makeReportRunner(
+  builder: SnapshotBuilder,
+  snapshots: SnapshotRepo,
+): ReportRunner {
   return {
-    build: ({ from, to }) => {
+    build: async ({ from, to }) => {
       const id = randomUUID();
       const generatedAt = new Date().toISOString();
       const snapshot = builder.build({ id, generatedAt, from, to });
-      snapshots.save({ id, generatedAt, dateFrom: from, dateTo: to, payload: snapshot });
+      snapshots.save({
+        id,
+        generatedAt,
+        dateFrom: from,
+        dateTo: to,
+        payload: snapshot,
+      });
+
+      // Auto-generate AI hypotheses if Anthropic key is available
+      if (hasAnthropicKey()) {
+        try {
+          const generatedHypotheses = await generateHypotheses(snapshot, {
+            fetch: globalThis.fetch as unknown as AnthropicFetch,
+            apiKey: config.ANTHROPIC_API_KEY,
+            model: config.ANTHROPIC_MODEL,
+          });
+          // Persist hypotheses onto the snapshot so DOCX/PDF render them deterministically
+          snapshots.save({
+            id,
+            generatedAt,
+            dateFrom: from,
+            dateTo: to,
+            payload: { ...snapshot, generatedHypotheses },
+            docxPath: undefined,
+            pdfPath: undefined,
+          });
+          return { ...snapshot, generatedHypotheses };
+        } catch {
+          // Hypotheses generation failed — return snapshot without hypotheses
+          // (user can retry via POST /api/report/hypotheses)
+        }
+      }
+
       return snapshot;
     },
     get: (id) => snapshots.getById(id)?.payload as ReportSnapshot | undefined,
@@ -87,6 +124,11 @@ export function makeReportRunner(builder: SnapshotBuilder, snapshots: SnapshotRe
     hypotheses: async (snapshotId) => {
       const record = snapshots.getById(snapshotId);
       if (!record) return { ok: false, reason: 'not_found', message: 'snapshot not found' };
+      // If hypotheses were already generated during build, return them
+      const existing = record.payload as ReportSnapshot;
+      if (existing.generatedHypotheses) {
+        return { ok: true, hypotheses: existing.generatedHypotheses };
+      }
       if (!hasAnthropicKey()) {
         return {
           ok: false,

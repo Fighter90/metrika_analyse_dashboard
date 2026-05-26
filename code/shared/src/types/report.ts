@@ -45,6 +45,23 @@ export interface ReportKpi {
   readonly gap: number;
 }
 
+/** B2B pipeline summary for the report. */
+export interface B2bSummary {
+  readonly totalTickets: number;
+  readonly paidTickets: number;
+  readonly dealsCount: number;
+  readonly deals: Array<{ readonly company: string; readonly tickets: number; readonly stage: string }>;
+  readonly byStage: Array<{ readonly stage: string; readonly tickets: number; readonly deals: number }>;
+}
+
+/** Funnel stages for the report. */
+export interface ReportFunnel {
+  readonly visits: number;
+  readonly b2cApplications: number;
+  readonly b2bPipelineTickets: number;
+  readonly b2bPaidTickets: number;
+}
+
 /** Immutable report snapshot — DOCX/PDF render from this, never from live data. */
 export interface ReportSnapshot {
   readonly id: string;
@@ -57,6 +74,8 @@ export interface ReportSnapshot {
     readonly solutions: Hypothesis[];
   };
   readonly decisions: Decision[];
+  readonly b2bSummary: B2bSummary;
+  readonly funnel: ReportFunnel;
   readonly breakdowns: ReportBreakdowns;
   /**
    * Optional AI-generated narrative analysis (Anthropic), produced from the snapshot's numbers at

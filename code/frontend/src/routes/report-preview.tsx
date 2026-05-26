@@ -2,15 +2,16 @@ import { useMutation } from '@tanstack/react-query';
 import { reportSections, type ReportSnapshot } from '@pca/shared';
 import { api } from '../lib/api';
 import { useFilters } from '../store/filters';
-import { formatInt } from '../lib/format';
+import { formatInt, formatPercent } from '../lib/format';
 import { errorMessage } from '../lib/error-message';
 import { downloadFile, reportDownloadUrl } from '../lib/download';
 
-function Stat({ label, value }: { label: string; value: string }): JSX.Element {
+function Stat({ label, value, hint }: { label: string; value: string; hint?: string }): JSX.Element {
   return (
     <div className="rounded border border-slate-200 p-2">
       <div className="text-xs uppercase text-slate-500">{label}</div>
       <div className="text-lg font-bold">{value}</div>
+      {hint ? <div className="text-xs text-slate-400">{hint}</div> : null}
     </div>
   );
 }
@@ -91,18 +92,63 @@ export function ReportPreviewView({
             snapshot {snapshot.id} · период {snapshot.period.from} — {snapshot.period.to} ·
             сформирован {snapshot.generatedAt}
           </p>
+
+          {/* KPI strip */}
           <div className="grid grid-cols-4 gap-2">
             <Stat label="Цель" value={formatInt(snapshot.kpi.target)} />
-            <Stat label="Заявки B2C" value={formatInt(snapshot.kpi.b2cApplications)} />
+            <Stat label="Заявки B2C" value={formatInt(snapshot.kpi.b2cApplications)} hint="заявка ≠ оплата" />
             <Stat label="Оплачено B2B" value={formatInt(snapshot.kpi.b2bPaidTickets)} />
             <Stat label="Gap" value={formatInt(snapshot.kpi.gap)} />
           </div>
+
+          {/* Funnel summary */}
+          {snapshot.funnel && (
+            <div className="grid grid-cols-4 gap-2">
+              <Stat label="Визиты" value={formatInt(snapshot.funnel.visits)} />
+              <Stat
+                label="Воронка → Заявки"
+                value={formatInt(snapshot.funnel.b2cApplications)}
+                hint={
+                  snapshot.funnel.visits > 0
+                    ? `CR ${formatPercent(snapshot.funnel.b2cApplications / snapshot.funnel.visits)}`
+                    : undefined
+                }
+              />
+              <Stat label="B2B в работе" value={formatInt(snapshot.funnel.b2bPipelineTickets)} />
+              <Stat label="B2B оплачено" value={formatInt(snapshot.funnel.b2bPaidTickets)} />
+            </div>
+          )}
+
+          {/* B2B summary */}
+          {snapshot.b2bSummary && snapshot.b2bSummary.dealsCount > 0 && (
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold text-slate-700">B2B-пайплайн</h3>
+              <p className="text-xs text-slate-600">
+                {snapshot.b2bSummary.dealsCount} сделок ·{' '}
+                {formatInt(snapshot.b2bSummary.totalTickets)} билетов всего ·{' '}
+                {formatInt(snapshot.b2bSummary.paidTickets)} оплачено
+              </p>
+              <div className="flex gap-2 text-xs text-slate-500">
+                {snapshot.b2bSummary.byStage.map((s) => (
+                  <span key={s.stage} className="rounded bg-slate-100 px-2 py-0.5">
+                    {s.stage}: {s.tickets} ({s.deals})
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Data summary */}
           <ul className="text-sm text-slate-600">
             <li>Каналов: {snapshot.channels.length}</li>
-            <li>Problem-гипотез: {snapshot.hypotheses.problems.length}</li>
-            <li>Solution-гипотез: {snapshot.hypotheses.solutions.length}</li>
-            <li>Решений: {snapshot.decisions.length}</li>
+            <li>
+              AI-гипотез: {snapshot.generatedHypotheses
+                ? `${snapshot.generatedHypotheses.problems.length} проблем + ${snapshot.generatedHypotheses.solutions.length} решений`
+                : 'не сгенерированы'}
+            </li>
+            <li>Решений в Decision Log: {snapshot.decisions.length}</li>
           </ul>
+
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -128,6 +174,7 @@ export function ReportPreviewView({
             </button>
           </div>
 
+          {/* Optional AI narrative */}
           <div className="space-y-2 border-t border-slate-100 pt-3">
             <button
               type="button"
@@ -159,6 +206,7 @@ export function ReportPreviewView({
       ) : (
         <p className="text-slate-500">
           Нажмите «Сформировать snapshot», чтобы собрать неизменяемый отчёт за выбранный период.
+          Гипотезы генерируются автоматически при наличии ANTHROPIC_API_KEY.
         </p>
       )}
     </section>

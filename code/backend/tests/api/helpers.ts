@@ -27,7 +27,7 @@ export function buildTestApp(logger?: FastifyServerOptions['logger']): TestApp {
   const builder = new SnapshotBuilder({ metrics, hypotheses, decisions, b2b });
   const snapshots = new SnapshotRepo(db);
   const report: ReportRunner = {
-    build: ({ from, to }) => {
+    build: async ({ from, to }) => {
       const s = builder.build({ id: 'test-snapshot', generatedAt: 'test', from, to });
       snapshots.save({
         id: s.id,

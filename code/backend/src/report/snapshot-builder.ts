@@ -19,6 +19,36 @@ export interface BuildOptions {
   readonly to: string;
 }
 
+export interface B2bSummary {
+  readonly totalTickets: number;
+  readonly paidTickets: number;
+  readonly dealsCount: number;
+  readonly deals: Array<{ company: string; tickets: number; stage: string }>;
+  readonly byStage: Array<{ stage: string; tickets: number; deals: number }>;
+}
+
+function computeB2bSummary(b2b: ReturnType<B2bRepo['list']>): B2bSummary {
+  const totalTickets = b2b.reduce((a, d) => a + d.tickets, 0);
+  const paidTickets = b2b.filter((d) => d.stage === 'paid').reduce((a, d) => a + d.tickets, 0);
+  const byStageMap = new Map<string, { tickets: number; deals: number }>();
+  for (const d of b2b) {
+    const cur = byStageMap.get(d.stage) ?? { tickets: 0, deals: 0 };
+    byStageMap.set(d.stage, { tickets: cur.tickets + d.tickets, deals: cur.deals + 1 });
+  }
+  const byStage = [...byStageMap.entries()].map(([stage, v]) => ({
+    stage,
+    tickets: v.tickets,
+    deals: v.deals,
+  }));
+  return {
+    totalTickets,
+    paidTickets,
+    dealsCount: b2b.length,
+    deals: b2b.map((d) => ({ company: d.company, tickets: d.tickets, stage: d.stage })),
+    byStage,
+  };
+}
+
 /**
  * Assembles an immutable ReportSnapshot purely from the cached DB — no live API calls,
  * no Date.now() (id + generatedAt are inputs), so the same data + inputs yield the same snapshot.
@@ -29,6 +59,10 @@ export class SnapshotBuilder {
   build(opts: BuildOptions): ReportSnapshot {
     const range = { from: opts.from, to: opts.to };
     const channels = this.deps.metrics.listChannelStats(range);
+    const utmStats = this.deps.metrics.listUtmStats(range);
+    const geoDeviceStats = this.deps.metrics.listGeoDeviceStats(range);
+    const pageStats = this.deps.metrics.listPageStats(range);
+    const exitPageStats = this.deps.metrics.listExitPageStats(range);
     const all = this.deps.hypotheses.list();
     const decisions = this.deps.decisions.list();
     const b2b = this.deps.b2b.list();
@@ -37,6 +71,13 @@ export class SnapshotBuilder {
     const b2bPaidTickets = b2b
       .filter((d) => d.stage === 'paid')
       .reduce((acc, d) => acc + d.tickets, 0);
+    const b2bSummary = computeB2bSummary(b2b);
+
+    // Compute funnel: visits → reaches → B2B pipeline → B2B paid
+    const totalVisits = channels.reduce((a, c) => a + c.visits, 0);
+    const b2bPipelineTickets = b2b
+      .filter((d) => d.stage !== 'paid')
+      .reduce((a, d) => a + d.tickets, 0);
 
     return {
       id: opts.id,
@@ -54,11 +95,18 @@ export class SnapshotBuilder {
         solutions: all.filter((h) => h.kind === 'solution'),
       },
       decisions,
+      b2bSummary,
+      funnel: {
+        visits: totalVisits,
+        b2cApplications,
+        b2bPipelineTickets,
+        b2bPaidTickets,
+      },
       breakdowns: {
-        utm: topUtm(this.deps.metrics.listUtmStats(range)),
-        geoDevice: topGeoDevice(this.deps.metrics.listGeoDeviceStats(range)),
-        entryPages: topPages(this.deps.metrics.listPageStats(range)),
-        exitPages: topPages(this.deps.metrics.listExitPageStats(range)),
+        utm: topUtm(utmStats),
+        geoDevice: topGeoDevice(geoDeviceStats),
+        entryPages: topPages(pageStats),
+        exitPages: topPages(exitPageStats),
       },
     };
   }
