@@ -60,8 +60,8 @@ describe('ReportPreviewView', () => {
   it('prompts to build, and the build button reflects pending state', () => {
     const onBuild = vi.fn();
     const { rerender } = render(<ReportPreviewView {...baseProps} onBuild={onBuild} />);
-    expect(screen.getByText(/Нажмите «Сформировать snapshot»/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Сформировать snapshot' }));
+    expect(screen.getByText(/Нажмите «Сформировать срез данных»/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Сформировать срез данных' }));
     expect(onBuild).toHaveBeenCalled();
 
     rerender(<ReportPreviewView {...baseProps} isPending />);
@@ -71,7 +71,8 @@ describe('ReportPreviewView', () => {
   it('shows the snapshot summary and triggers DOCX + PDF export', () => {
     const onExport = vi.fn();
     render(<ReportPreviewView {...baseProps} snapshot={snapshot} onExport={onExport} />);
-    expect(screen.getByText(/snapshot snap-1/)).toBeInTheDocument();
+    // Check for "Срез данных: snap-1" instead of "snapshot snap-1"
+    expect(screen.getByText(/Срез данных: snap-1/)).toBeInTheDocument();
     expect(screen.getByText('Заявки B2C')).toBeInTheDocument();
     expect(screen.getByText(/не сгенерированы/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Export DOCX' }));
@@ -92,7 +93,7 @@ describe('ReportPreviewView', () => {
     expect(screen.getByRole('button', { name: 'Перестраиваю…' })).toBeDisabled();
   });
 
-  it('triggers AI insights, shows pending, the narrative, and an error', () => {
+  it('triggers AI insights, shows pending progress, the narrative, and an error', () => {
     const onInsights = vi.fn();
     const { rerender } = render(
       <ReportPreviewView {...baseProps} snapshot={snapshot} onInsights={onInsights} />,
@@ -100,8 +101,11 @@ describe('ReportPreviewView', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Сгенерировать AI-анализ' }));
     expect(onInsights).toHaveBeenCalledWith('snap-1');
 
+    // When pending, show progress bar instead of disabled button
     rerender(<ReportPreviewView {...baseProps} snapshot={snapshot} insightsPending />);
-    expect(screen.getByRole('button', { name: 'Анализирую…' })).toBeDisabled();
+    // Progress bar should be visible
+    expect(screen.getByText(/Генерация AI-анализа/)).toBeInTheDocument();
+    expect(screen.getByText(/\d+%/)).toBeInTheDocument();
 
     rerender(
       <ReportPreviewView {...baseProps} snapshot={snapshot} narrative="Итог: рост заявок." />,
@@ -140,8 +144,8 @@ describe('ReportPreview (wrapper)', () => {
 
   it('builds a snapshot then downloads the DOCX export', async () => {
     renderWithProviders(<ReportPreview />);
-    fireEvent.click(screen.getByRole('button', { name: 'Сформировать snapshot' }));
-    expect(await screen.findByText(/snapshot snap-1/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Сформировать срез данных' }));
+    expect(await screen.findByText(/Срез данных: snap-1/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Export DOCX' }));
     expect(downloadFile).toHaveBeenCalledWith('/api/report/download/snap-1/docx');
@@ -150,8 +154,8 @@ describe('ReportPreview (wrapper)', () => {
   it('generates an AI narrative for the snapshot', async () => {
     vi.mocked(api.generateInsights).mockResolvedValue({ narrative: 'AI: рост заявок' });
     renderWithProviders(<ReportPreview />);
-    fireEvent.click(screen.getByRole('button', { name: 'Сформировать snapshot' }));
-    expect(await screen.findByText(/snapshot snap-1/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Сформировать срез данных' }));
+    expect(await screen.findByText(/Срез данных: snap-1/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Сгенерировать AI-анализ' }));
     expect(await screen.findByText(/AI: рост заявок/)).toBeInTheDocument();

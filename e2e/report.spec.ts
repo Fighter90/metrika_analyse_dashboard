@@ -5,13 +5,13 @@ test.describe('Report — snapshot, on-screen render, export, AI', () => {
   test('builds a snapshot and renders the full report on screen', async ({ page }) => {
     await installMocks(page);
     await page.goto('/report');
-    await page.getByRole('button', { name: 'Сформировать snapshot' }).click();
-    await expect(page.getByText(/snapshot snap-e2e/)).toBeVisible();
+    await page.getByRole('button', { name: 'Сформировать срез данных' }).click();
+    await expect(page.getByText(/Срез данных: snap-e2e/)).toBeVisible();
 
     const full = page.getByRole('article', { name: 'Полный отчёт' });
     await expect(full).toBeVisible();
     // The on-screen report carries the same sections as the exported DOCX/PDF.
-    await expect(full.getByRole('heading', { name: 'Executive Summary' })).toBeVisible();
+    await expect(full.getByRole('heading', { name: 'Краткие итоги' })).toBeVisible();
     await expect(
       full.getByRole('heading', { name: 'Воронка: визит → заявка → оплата' }),
     ).toBeVisible();
@@ -19,14 +19,14 @@ test.describe('Report — snapshot, on-screen render, export, AI', () => {
       full.getByRole('heading', { name: 'Анализ по каналам (детальный)' }),
     ).toBeVisible();
     await expect(full.getByRole('heading', { name: 'Глоссарий и принципы' })).toBeVisible();
-    await expect(full.getByRole('heading', { name: 'Data Appendix' })).toBeVisible();
+    await expect(full.getByRole('heading', { name: 'Приложение с данными' })).toBeVisible();
   });
 
   test('exports DOCX and PDF and generates the AI analysis', async ({ page }) => {
     await installMocks(page);
     await page.goto('/report');
-    await page.getByRole('button', { name: 'Сформировать snapshot' }).click();
-    await expect(page.getByText(/snapshot snap-e2e/)).toBeVisible();
+    await page.getByRole('button', { name: 'Сформировать срез данных' }).click();
+    await expect(page.getByText(/Срез данных: snap-e2e/)).toBeVisible();
 
     const [docx] = await Promise.all([
       page.waitForEvent('download'),

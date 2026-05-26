@@ -5,6 +5,7 @@ import { useFilters } from '../store/filters';
 import { formatInt, formatPercent } from '../lib/format';
 import { errorMessage } from '../lib/error-message';
 import { downloadFile, reportDownloadUrl } from '../lib/download';
+import { useState, useEffect } from 'react';
 
 function Stat({
   label,
@@ -58,6 +59,24 @@ export function ReportFullView({ snapshot }: { snapshot: ReportSnapshot }): JSX.
   );
 }
 
+/** Progress bar component for AI analysis */
+function AIProgress({ progress, stage }: { progress: number; stage: string }): JSX.Element {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-xs text-violet-700">
+        <span>{stage}</span>
+        <span className="font-mono">{progress}%</span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-violet-100">
+        <div
+          className="h-full rounded-full bg-violet-600 transition-all duration-300"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export interface ReportPreviewProps {
   snapshot: ReportSnapshot | undefined;
   isPending: boolean;
@@ -80,6 +99,42 @@ export function ReportPreviewView({
   insightsError,
   onInsights,
 }: ReportPreviewProps): JSX.Element {
+  const [aiProgress, setAiProgress] = useState(0);
+  const [aiStage, setAiStage] = useState('');
+
+  // Simulate progress when AI analysis is pending
+  useEffect(() => {
+    if (!insightsPending) {
+      setAiProgress(0);
+      setAiStage('');
+      return;
+    }
+
+    const stages = [
+      'Подготовка данных',
+      'Генерация: Краткие итоги',
+      'Генерация: Каналы и UTM',
+      'Генерация: Аудитория',
+      'Генерация: Страницы',
+      'Генерация: Воронка и B2B',
+      'Генерация: Риски',
+      'Генерация: Рекомендации',
+      'Генерация: Приоритизация гипотез',
+      'Генерация: Гипотезы решений',
+      'Генерация: Дорожная карта',
+    ];
+
+    let step = 0;
+    const interval = setInterval(() => {
+      step++;
+      const progress = Math.min(Math.round((step / stages.length) * 100), 99);
+      setAiProgress(progress);
+      setAiStage(stages[Math.min(step, stages.length - 1)]);
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [insightsPending]);
+
   return (
     <section className="space-y-4">
       <div className="flex items-center gap-3">
@@ -90,14 +145,14 @@ export function ReportPreviewView({
           disabled={isPending}
           className="rounded bg-indigo-600 px-3 py-1 text-sm text-white disabled:opacity-40"
         >
-          {isPending ? 'Формирую…' : 'Сформировать snapshot'}
+          {isPending ? 'Формирую…' : 'Сформировать срез данных'}
         </button>
       </div>
 
       {snapshot ? (
         <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <p className="text-xs text-slate-500">
-            snapshot {snapshot.id} · период {snapshot.period.from} — {snapshot.period.to} ·
+            Срез данных: {snapshot.id} · период {snapshot.period.from} — {snapshot.period.to} ·
             сформирован {snapshot.generatedAt}
           </p>
 
@@ -187,16 +242,24 @@ export function ReportPreviewView({
             </button>
           </div>
 
-          {/* Optional AI narrative */}
+          {/* Optional AI narrative with progress bar */}
           <div className="space-y-2 border-t border-slate-100 pt-3">
-            <button
-              type="button"
-              onClick={() => onInsights(snapshot.id)}
-              disabled={insightsPending}
-              className="rounded bg-violet-600 px-3 py-1 text-sm text-white disabled:opacity-40"
-            >
-              {insightsPending ? 'Анализирую…' : 'Сгенерировать AI-анализ'}
-            </button>
+            {insightsPending ? (
+              <div className="space-y-2">
+                <AIProgress progress={aiProgress} stage={aiStage} />
+                <p className="text-xs text-violet-500">
+                  Генерация AI-анализа: 10 разделов, это может занять 1–2 минуты.
+                </p>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onInsights(snapshot.id)}
+                className="rounded bg-violet-600 px-3 py-1 text-sm text-white"
+              >
+                Сгенерировать AI-анализ
+              </button>
+            )}
             {insightsError ? (
               <p role="alert" className="text-xs text-red-600">
                 AI-анализ недоступен: {insightsError}
@@ -218,7 +281,7 @@ export function ReportPreviewView({
         </div>
       ) : (
         <p className="text-slate-500">
-          Нажмите «Сформировать snapshot», чтобы собрать неизменяемый отчёт за выбранный период.
+          Нажмите «Сформировать срез данных», чтобы собрать неизменяемый отчёт за выбранный период.
           Гипотезы генерируются автоматически при наличии ANTHROPIC_API_KEY.
         </p>
       )}

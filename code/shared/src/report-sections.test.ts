@@ -154,13 +154,13 @@ describe('reportSections — structure', () => {
   it('produces cover, summary, methodology, prioritization, overviews and appendix', () => {
     const headings = reportSections(baseSnapshot).map((s) => s.heading);
     expect(headings).toContain('ProductCamp · Конверсии и лидген');
-    expect(headings).toContain('Executive Summary');
+    expect(headings).toContain('Краткие итоги');
     expect(headings).toContain('Методология');
     expect(headings).toContain('Приоритизация гипотез (по ICE)');
     expect(headings).toContain('Define — проблемные гипотезы (обзор)');
     expect(headings).toContain('Develop — решенческие гипотезы (обзор)');
     expect(headings).toContain('Deliver — Decision Log (обзор)');
-    expect(headings).toContain('Data Appendix');
+    expect(headings).toContain('Приложение с данными');
   });
 
   it('is deterministic — same snapshot yields identical content', () => {
@@ -220,6 +220,34 @@ describe('reportSections — structure', () => {
     const glossary = findSection(baseSnapshot, (h) => h.startsWith('Глоссарий')).join('\n');
     expect(glossary).toContain('Заявка');
     expect(glossary).toContain('ICE');
+  });
+
+  it('uses Russian terms: Срез данных, ИД среза, Краткие итоги, Приложение с данными', () => {
+    const headings = reportSections(baseSnapshot).map((s) => s.heading);
+    expect(headings).toContain('Краткие итоги');
+    expect(headings).toContain('Приложение с данными');
+    const cover = findSection(baseSnapshot, (h) => h === 'ProductCamp · Конверсии и лидген').join(
+      '\n',
+    );
+    expect(cover).toContain('Срез данных:');
+    expect(cover).toContain('ИД среза');
+  });
+
+  it('skips empty hypothesis sections entirely when no hypotheses exist', () => {
+    const empty: ReportSnapshot = {
+      ...baseSnapshot,
+      hypotheses: { problems: [], solutions: [] },
+      decisions: [],
+      b2bSummary: { totalTickets: 0, paidTickets: 0, dealsCount: 0, deals: [], byStage: [] },
+      funnel: { visits: 0, b2cApplications: 0, b2bPipelineTickets: 0, b2bPaidTickets: 0 },
+    };
+    const headings = reportSections(empty).map((s) => s.heading);
+    // Empty hypothesis sections are SKIPPED (not rendered with placeholder)
+    expect(headings).not.toContain('Приоритизация гипотез (по ICE)');
+    expect(headings).not.toContain('Define — проблемные гипотезы (обзор)');
+    expect(headings).not.toContain('Develop — решенческие гипотезы (обзор)');
+    expect(headings).not.toContain('Проблемные гипотезы (AI)');
+    expect(headings).not.toContain('Решенческие гипотезы (AI)');
   });
 });
 
@@ -363,10 +391,10 @@ describe('reportSections — breakdowns, AI and empty states', () => {
     };
     expect(findSection(s, (h) => h === 'Топ источников UTM')[0]).toContain('CR 0.0%');
     expect(findSection(s, (h) => h === 'Топ гео + устройства')[0]).toContain('CR 0.0%');
-    expect(findSection(s, (h) => h === 'Data Appendix').join(' ')).toContain('CR 0.0%');
+    expect(findSection(s, (h) => h === 'Приложение с данными').join(' ')).toContain('CR 0.0%');
   });
 
-  it('shows empty-state copy when nothing is present', () => {
+  it('shows empty-state copy for channels, UTM, geo, pages when nothing is present', () => {
     const empty: ReportSnapshot = {
       ...baseSnapshot,
       channels: [],
@@ -376,22 +404,19 @@ describe('reportSections — breakdowns, AI and empty states', () => {
       funnel: { visits: 0, b2cApplications: 0, b2bPipelineTickets: 0, b2bPaidTickets: 0 },
       breakdowns: { utm: [], geoDevice: [], entryPages: [], exitPages: [] },
     };
-    expect(findSection(empty, (h) => h.startsWith('Приоритизация'))[0]).toContain(
-      'приоритизировать нечего',
-    );
     expect(findSection(empty, (h) => h === 'Анализ по каналам')[0]).toContain(
       'Нет данных по каналам',
     );
-    expect(findSection(empty, (h) => h.startsWith('Дорожная карта'))[0]).toContain(
-      'дорожной карты пока нет',
-    );
-    expect(findSection(empty, (h) => h.startsWith('Define'))[0]).toContain('ещё не заведены');
-    expect(findSection(empty, (h) => h.startsWith('Develop'))[0]).toContain('ещё не заведены');
-    expect(findSection(empty, (h) => h.startsWith('Deliver'))[0]).toContain('пока нет');
     expect(findSection(empty, (h) => h === 'Топ источников UTM')[0]).toContain('Нет данных UTM');
     expect(findSection(empty, (h) => h === 'Топ гео + устройства')[0]).toContain('Нет данных');
     expect(findSection(empty, (h) => h === 'Топ страниц входа')[0]).toContain('Нет данных');
     expect(findSection(empty, (h) => h === 'Топ страниц выхода')[0]).toContain('Нет данных');
+    // Decision Log always shows
+    expect(findSection(empty, (h) => h.startsWith('Deliver'))[0]).toContain('пока нет');
+    // Roadmap shows "no hypotheses" message
+    expect(findSection(empty, (h) => h.startsWith('Дорожная карта'))[0]).toContain(
+      'дорожной карты пока нет',
+    );
   });
 
   it('includes the AI-анализ section only when aiNarrative is present', () => {

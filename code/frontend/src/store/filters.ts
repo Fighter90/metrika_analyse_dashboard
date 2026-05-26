@@ -19,6 +19,10 @@ function isoDaysAgo(days: number): string {
   return new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
 }
 
+function isoDate(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
 /** Global dashboard filters (sticky header). */
 export const useFilters = create<FiltersState>((set) => ({
   from: isoDaysAgo(13),
@@ -37,3 +41,27 @@ export const useFilters = create<FiltersState>((set) => ({
   toggleArchived: () => set((s) => ({ showArchived: !s.showArchived })),
   preset: (days) => set({ from: isoDaysAgo(days - 1), to: isoDaysAgo(0) }),
 }));
+
+/** Helper: format date for display */
+export function formatDateLabel(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return iso;
+  }
+}
+
+/** Helper: parse date input value to ISO date string */
+export function parseDateInput(value: string): string {
+  if (!value) return isoDaysAgo(0);
+  // Ensure YYYY-MM-DD format
+  const parts = value.split('-');
+  if (parts.length === 3) {
+    return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+  }
+  return value;
+}

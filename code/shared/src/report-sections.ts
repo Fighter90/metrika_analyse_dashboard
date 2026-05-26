@@ -199,18 +199,12 @@ function b2bSection(s: ReportSnapshot): ReportSection | null {
 function funnelSection(s: ReportSnapshot): ReportSection | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const funnel = (s as any).funnel as
-    | {
-        visits: number;
-        b2cApplications: number;
-        b2bPipelineTickets: number;
-        b2bPaidTickets: number;
-      }
+    | { visits: number; b2cApplications: number; b2bPipelineTickets: number; b2bPaidTickets: number }
     | undefined;
 
   if (!funnel) return null;
 
-  const visitToAppCR =
-    funnel.visits > 0 ? ((funnel.b2cApplications / funnel.visits) * 100).toFixed(1) : '0.0';
+  const visitToAppCR = funnel.visits > 0 ? ((funnel.b2cApplications / funnel.visits) * 100).toFixed(1) : '0.0';
 
   const lines: string[] = [
     `Этап 1: Визиты — ${funnel.visits}`,
@@ -226,9 +220,7 @@ function funnelSection(s: ReportSnapshot): ReportSection | null {
     lines.push('');
     lines.push('Анализ воронки:');
     const lostVisits = funnel.visits - funnel.b2cApplications;
-    lines.push(
-      `  • Потеряно на этапе заявки: ${lostVisits} визитов (${((lostVisits / funnel.visits) * 100).toFixed(1)}%)`,
-    );
+    lines.push(`  • Потеряно на этапе заявки: ${lostVisits} визитов (${((lostVisits / funnel.visits) * 100).toFixed(1)}%)`);
     if (funnel.b2bPipelineTickets > 0) {
       lines.push(`  • B2B-пайплайн в работе: ${funnel.b2bPipelineTickets} билетов`);
     }
@@ -265,34 +257,24 @@ function channelAnalysisSection(s: ReportSnapshot): ReportSection {
 
   // Highlight top and bottom performers
   if (totals.length > 0) {
-    const bestCr = totals.reduce(
-      (best, t) => {
-        if (!t) return best;
-        const cr = t.visits > 0 ? t.goalReaches / t.visits : 0;
-        return cr > best.cr ? { channel: t.channel, cr } : best;
-      },
-      { channel: '', cr: 0 },
-    );
+    const bestCr = totals.reduce((best, t) => {
+      if (!t) return best;
+      const cr = t.visits > 0 ? t.goalReaches / t.visits : 0;
+      return cr > best.cr ? { channel: t.channel, cr } : best;
+    }, { channel: '', cr: 0 });
 
-    const worstCr = totals.reduce(
-      (worst, t) => {
-        if (!t || t.visits === 0) return worst;
-        const cr = t.goalReaches / t.visits;
-        return cr < worst.cr ? { channel: t.channel, cr } : worst;
-      },
-      { channel: totals[0]?.channel ?? '', cr: 1 },
-    );
+    const worstCr = totals.reduce((worst, t) => {
+      if (!t || t.visits === 0) return worst;
+      const cr = t.goalReaches / t.visits;
+      return cr < worst.cr ? { channel: t.channel, cr } : worst;
+    }, { channel: totals[0]?.channel ?? '', cr: 1 });
 
     lines.push('Выводы:');
     if (bestCr.channel) {
-      lines.push(
-        `  • Лучший CR: ${bestCr.channel} (${(bestCr.cr * 100).toFixed(1)}%) — масштабировать`,
-      );
+      lines.push(`  • Лучший CR: ${bestCr.channel} (${(bestCr.cr * 100).toFixed(1)}%) — масштабировать`);
     }
     if (worstCr.channel && worstCr.cr > 0) {
-      lines.push(
-        `  • Худший CR: ${worstCr.channel} (${(worstCr.cr * 100).toFixed(1)}%) — проверить качество трафика`,
-      );
+      lines.push(`  • Худший CR: ${worstCr.channel} (${(worstCr.cr * 100).toFixed(1)}%) — проверить качество трафика`);
     }
   }
 
@@ -300,10 +282,12 @@ function channelAnalysisSection(s: ReportSnapshot): ReportSection {
 }
 
 /**
- * Build the full ordered section list for a snapshot. Each entry becomes an H1 + paragraphs in
+ * Build the full ordered section list for a report snapshot. Each entry becomes an H1 + paragraphs in
  * DOCX/HTML and an accordion block on screen — so a populated snapshot renders as a long,
  * detailed report (cover → summary → methodology → prioritization → every hypothesis in full →
  * decision log → AI analysis → breakdowns → data appendix).
+ *
+ * Empty hypothesis sections are skipped entirely — they only appear when hypotheses exist.
  */
 export function reportSections(s: ReportSnapshot): ReportSection[] {
   const problems = s.hypotheses.problems;
@@ -311,6 +295,9 @@ export function reportSections(s: ReportSnapshot): ReportSection[] {
   const allByPriority = [...problems, ...solutions].sort(
     (a, b) => b.iceScore - a.iceScore || a.id - b.id,
   );
+  const hasHypotheses = allByPriority.length > 0;
+  const hasAiHypotheses = (s.generatedHypotheses?.problems.length ?? 0) > 0 ||
+    (s.generatedHypotheses?.solutions.length ?? 0) > 0;
   const totalVisits = s.channels.reduce((acc, c) => acc + c.visits, 0);
 
   const sections: ReportSection[] = [
@@ -318,16 +305,16 @@ export function reportSections(s: ReportSnapshot): ReportSection[] {
       heading: 'ProductCamp · Конверсии и лидген',
       lines: [
         `Период: ${s.period.from} — ${s.period.to}`,
-        `Снапшот: ${s.id} · сформирован ${s.generatedAt}`,
+        `Срез данных: ${s.id} · сформирован ${s.generatedAt}`,
         `KPI: цель ${s.kpi.target} оплаченных билетов`,
-        'Отчёт детерминированный: один snapshotId → идентичный контент в DOCX, PDF и на экране.',
-        'Каждая цифра прослеживается до raw_responses в SQLite (anti-hallucination).',
+        'Отчёт детерминированный: один ИД среза → идентичный контент в DOCX, PDF и на экране.',
+        'Каждая цифра прослеживается до raw_responses в SQLite (анти-галлюцинация).',
       ],
     },
     {
-      heading: 'Executive Summary',
+      heading: 'Краткие итоги',
       lines: [
-        `Заявки B2C (goal reaches за период): ${s.kpi.b2cApplications}`,
+        `Заявки B2C (достижения цели за период): ${s.kpi.b2cApplications}`,
         `Оплачено B2B (билетов): ${s.kpi.b2bPaidTickets}`,
         `Gap до цели (по оплатам): ${s.kpi.gap}`,
         `Суммарно визитов в выборке каналов: ${totalVisits}`,
@@ -355,7 +342,7 @@ export function reportSections(s: ReportSnapshot): ReportSection[] {
         'обоснования. Бакеты: ≤125 низкий, ≤342 средний, ≤729 высокий, выше — топ-приоритет.',
         '',
         'Анти-галлюцинация: ни одной цифры без следа в raw_responses; в render-пути нет LLM и',
-        'Date.now(); AI-нарратив (если есть) сгенерирован один раз и сохранён в снапшоте.',
+        'Date.now(); AI-нарратив (если есть) сгенерирован один раз и сохранён в срезе данных.',
       ],
     },
   ];
@@ -375,7 +362,7 @@ export function reportSections(s: ReportSnapshot): ReportSection[] {
     heading: 'Воронка: визит → заявка → оплата',
     lines: [
       `1) Визиты (сумма по каналам за период): ${totalVisits}`,
-      `2) Заявки B2C (goal reaches): ${s.kpi.b2cApplications} — конверсия визит→заявка ${pct(
+      `2) Заявки B2C (достижения цели): ${s.kpi.b2cApplications} — конверсия визит→заявка ${pct(
         s.kpi.b2cApplications,
         totalVisits,
       )}`,
@@ -409,45 +396,42 @@ export function reportSections(s: ReportSnapshot): ReportSection[] {
           ],
   });
 
-  sections.push({
-    heading: 'Приоритизация гипотез (по ICE)',
-    lines:
-      allByPriority.length === 0
-        ? ['Гипотезы ещё не заведены — приоритизировать нечего.']
-        : [
-            'Все гипотезы, отсортированы по убыванию ICE. Сверху — то, что бьём первым:',
-            '',
-            ...allByPriority.map((h, i) => priorityLine(h, i + 1)),
-          ],
-  });
+  // Hypothesis sections — only when hypotheses exist
+  if (hasHypotheses) {
+    sections.push({
+      heading: 'Приоритизация гипотез (по ICE)',
+      lines: [
+        'Все гипотезы, отсортированы по убыванию ICE. Сверху — то, что бьём первым:',
+        '',
+        ...allByPriority.map((h, i) => priorityLine(h, i + 1)),
+      ],
+    });
 
-  sections.push({
-    heading: 'Define — проблемные гипотезы (обзор)',
-    lines:
-      problems.length === 0
-        ? ['Проблемные гипотезы ещё не заведены.']
-        : [
-            `Заведено ${problems.length} проблемных гипотез. Полная карточка каждой — ниже.`,
-            ...problems.map((h, i) => `  ${i + 1}) ${h.title} [ICE ${h.iceScore}]`),
-          ],
-  });
-  sections.push(...problems.map((h, i) => hypothesisDetail(h, i + 1)));
+    sections.push({
+      heading: 'Define — проблемные гипотезы (обзор)',
+      lines: [
+        `Заведено ${problems.length} проблемных гипотез. Полная карточка каждой — ниже.`,
+        ...problems.map((h, i) => `  ${i + 1}) ${h.title} [ICE ${h.iceScore}]`),
+      ],
+    });
+    sections.push(...problems.map((h, i) => hypothesisDetail(h, i + 1)));
 
-  sections.push({
-    heading: 'Develop — решенческие гипотезы (обзор)',
-    lines:
-      solutions.length === 0
-        ? ['Решенческие гипотезы ещё не заведены.']
-        : [
-            `Заведено ${solutions.length} решенческих гипотез. Полная карточка каждой — ниже.`,
-            ...solutions.map((h, i) => `  ${i + 1}) ${h.title} [ICE ${h.iceScore}]`),
-          ],
-  });
-  sections.push(...solutions.map((h, i) => hypothesisDetail(h, problems.length + i + 1)));
+    sections.push({
+      heading: 'Develop — решенческие гипотезы (обзор)',
+      lines: [
+        `Заведено ${solutions.length} решенческих гипотез. Полная карточка каждой — ниже.`,
+        ...solutions.map((h, i) => `  ${i + 1}) ${h.title} [ICE ${h.iceScore}]`),
+      ],
+    });
+    sections.push(...solutions.map((h, i) => hypothesisDetail(h, problems.length + i + 1)));
+  }
 
-  // AI-generated hypotheses (detailed)
-  sections.push(...aiHypothesisSections(s.generatedHypotheses));
+  // AI-generated hypotheses — only when they exist
+  if (hasAiHypotheses) {
+    sections.push(...aiHypothesisSections(s.generatedHypotheses));
+  }
 
+  // Decision Log — always show
   sections.push({
     heading: 'Deliver — Decision Log (обзор)',
     lines:
@@ -498,7 +482,7 @@ export function reportSections(s: ReportSnapshot): ReportSection[] {
     {
       heading: 'Дорожная карта: что делаем дальше',
       lines:
-        allByPriority.length === 0
+        !hasHypotheses
           ? ['Гипотезы не заведены — дорожной карты пока нет.']
           : [
               'Топ-приоритеты по ICE и целевой результат (порог 🟢) каждой гипотезы:',
@@ -525,11 +509,11 @@ export function reportSections(s: ReportSnapshot): ReportSection[] {
         'Double Diamond — Define (проблемы) → Develop (решения) → Deliver (решения зафиксированы).',
         'Светофор 🟢/🟡/🔴 — пороги исхода проверки гипотезы с конкретной метрикой.',
         'raw_responses — таблица сырых ответов Метрики в SQLite; источник правды для всех цифр.',
-        'snapshotId — идентификатор неизменяемого снапшота; гарантирует идентичность DOCX/PDF/экрана.',
+        'ИД среза — идентификатор неизменяемого среза данных; гарантирует идентичность DOCX/PDF/экрана.',
       ],
     },
     {
-      heading: 'Data Appendix',
+      heading: 'Приложение с данными',
       lines: [
         `Каналов в выборке: ${s.channels.length}`,
         ...s.channels.map(channelLine),
