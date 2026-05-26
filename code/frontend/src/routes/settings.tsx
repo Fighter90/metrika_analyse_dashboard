@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { errorMessage } from '../lib/error-message';
@@ -27,6 +27,40 @@ function isoDaysAgo(days: number): string {
   return new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
 }
 
+/** Progress bar with detailed step descriptions for Metrika sync */
+function SyncProgress({ progress, stage }: { progress: number; stage: string }): JSX.Element {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-medium text-indigo-700">{stage}</span>
+        <span className="font-mono text-indigo-600">{progress}%</span>
+      </div>
+      <div className="h-3 overflow-hidden rounded-full bg-indigo-100">
+        <div
+          className="h-full rounded-full bg-indigo-600 transition-all duration-500 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <div className="rounded bg-indigo-50 px-3 py-2 text-xs text-indigo-600">
+        {SYNC_STAGES.find((s) => s.label === stage)?.description ?? ''}
+      </div>
+    </div>
+  );
+}
+
+const SYNC_STAGES = [
+  { label: 'Подключение к Яндекс.Метрике', description: 'Проверяем OAuth-токен и устанавливаем соединение с API Метрики...', pct: 5 },
+  { label: 'Получение списка целей', description: 'Загружаем все настроенные цели счётчика для определения KPI...', pct: 15 },
+  { label: 'Загрузка данных по каналам', description: 'Парсим визиты, заявки и конверсии по каждому каналу трафика (Direct, Search, Social и др.)...', pct: 30 },
+  { label: 'Загрузка UTM-разбивки', description: 'Собираем детальную статистику по UTM-меткам: source, medium, campaign...', pct: 45 },
+  { label: 'Загрузка гео и устройств', description: 'Загружаем разбивку по странам, регионам и типам устройств (смартфоны, ПК, планшеты)...', pct: 55 },
+  { label: 'Загрузка страниц входа', description: 'Парсим статистику по посадочным страницам: визиты, отказы, конверсии...', pct: 65 },
+  { label: 'Загрузка страниц выхода', description: 'Загружаем данные по страницам выхода для анализа точек отвала...', pct: 75 },
+  { label: 'Сохранение в базу данных', description: 'Записываем все полученные данные в SQLite для быстрого доступа...', pct: 85 },
+  { label: 'Обновление отчётов', description: 'Перегенерация снапшотов и переиндексация данных...', pct: 95 },
+  { label: 'Готово!', description: 'Все данные обновлены. Страницы дашборда будут автоматически refreshed.', pct: 100 },
+];
+
 /** Pure presentational Settings view. */
 export function SettingsView({
   status,
@@ -52,11 +86,48 @@ export function SettingsView({
   refreshResult: { goals: number; days: number; channelRows: number } | undefined;
 }): JSX.Element {
   const [form, setForm] = useState<SettingsForm>(settings ?? emptyForm());
+  const [syncProgress, setSyncProgress] = useState(0);
+  const [syncStage, setSyncStage] = useState('');
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Sync form state when settings data arrives from server
   useEffect(() => {
     if (settings) setForm(settings);
   }, [settings]);
+
+  // Progress simulation during sync
+  useEffect(() => {
+    if (!isRefreshing) {
+      setSyncProgress(0);
+      setSyncStage('');
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return;
+    }
+
+    setSyncStage(SYNC_STAGES[0]?.label ?? '');
+    setSyncProgress(0);
+
+    let stageIdx = 0;
+    const stepDuration = 2000; // 2s per stage = ~20s total for 10 stages
+
+    intervalRef.current = setInterval(() => {
+      stageIdx++;
+      if (stageIdx >= SYNC_STAGES.length) {
+        setSyncProgress(100);
+        setSyncStage(SYNC_STAGES[SYNC_STAGES.length - 1]?.label ?? '');
+      } else {
+        const stage = SYNC_STAGES[stageIdx];
+        if (stage) {
+          setSyncProgress(stage.pct);
+          setSyncStage(stage.label);
+        }
+      }
+    }, stepDuration);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isRefreshing]);
 
   if (status === 'pending') return <p className="text-slate-500">Загрузка…</p>;
   if (status === 'error')
@@ -89,26 +160,39 @@ export function SettingsView({
         </p>
       ) : null}
 
-      {/* Big refresh button */}
+      {/* Big refresh button with progress bar */}
       <div className="rounded-lg border-2 border-indigo-200 bg-indigo-50 p-4">
         <button
           type="button"
           onClick={onRefresh}
           disabled={isRefreshing}
-          className={
-            'w-full rounded-lg bg-indigo-600 px-6 py-3 text-lg font-semibold text-white ' +
-            'disabled:opacity-50 hover:bg-indigo-700'
-          }
+          className="w-full rounded-lg bg-indigo-600 px-6 py-3 text-lg font-semibold text-white disabled:opacity-50 hover:bg-indigo-700"
         >
-          {isRefreshing ? '⏳ Обновляю данные из Метрики…' : '🔄 Обновить данные из Метрики'}
+          {isRefreshing ? '⏳ Обновление из Метрики…' : '🔄 Обновить данные из Метрики'}
         </button>
-        {refreshResult ? (
-          <p className="mt-2 text-sm text-indigo-700">
-            ✅ За {refreshResult.days} дн.: {refreshResult.goals} целей, {refreshResult.channelRows}{' '}
-            строк каналов.
-          </p>
+
+        {isRefreshing && (
+          <div className="mt-4">
+            <SyncProgress progress={syncProgress} stage={syncStage} />
+          </div>
+        )}
+
+        {refreshResult && !isRefreshing ? (
+          <div className="mt-3 space-y-1">
+            <p className="text-sm text-green-700">
+              ✅ Обновлено за {refreshResult.days} дн.: {refreshResult.goals} целей,{' '}
+              {refreshResult.channelRows} строк каналов.
+            </p>
+            <ul className="text-xs text-indigo-600">
+              <li>• Каналы трафика: загружены</li>
+              <li>• UTM-метки: загружены</li>
+              <li>• Гео и устройства: загружены</li>
+              <li>• Страницы входа/выхода: загружены</li>
+              <li>• База данных: обновлена</li>
+            </ul>
+          </div>
         ) : null}
-        <p className="mt-1 text-xs text-indigo-400">
+        <p className="mt-2 text-xs text-indigo-400">
           Последние 14 дней → SQLite → перегенерация отчётов
         </p>
       </div>
