@@ -54,18 +54,12 @@ export function OverviewView({
   // UTM coverage
   const utmWithSource = utm?.filter((u) => u.utmSource && u.utmSource !== '(none)') ?? [];
   const utmCoverage =
-    utm && utm.length > 0
-      ? ((utmWithSource.length / utm.length) * 100).toFixed(0)
-      : '0';
+    utm && utm.length > 0 ? ((utmWithSource.length / utm.length) * 100).toFixed(0) : '0';
   const lowUtm = utm && utm.length > 0 && Number(utmCoverage) < 70;
 
   // Top entry pages
-  const topEntry = (entryPages ?? [])
-    .sort((a, b) => b.visits - a.visits)
-    .slice(0, 5);
-  const topExit = (exitPages ?? [])
-    .sort((a, b) => b.visits - a.visits)
-    .slice(0, 5);
+  const topEntry = (entryPages ?? []).sort((a, b) => b.visits - a.visits).slice(0, 5);
+  const topExit = (exitPages ?? []).sort((a, b) => b.visits - a.visits).slice(0, 5);
 
   return (
     <section className="space-y-6">
@@ -130,7 +124,10 @@ export function OverviewView({
                 .sort((a, b) => b.visits - a.visits)
                 .slice(0, 10)
                 .map((u) => (
-                  <tr key={`${u.utmSource}-${u.utmMedium}-${u.utmCampaign}`} className="border-t border-slate-100">
+                  <tr
+                    key={`${u.utmSource}-${u.utmMedium}-${u.utmCampaign}`}
+                    className="border-t border-slate-100"
+                  >
                     <td className="py-1">{u.utmSource ?? '(none)'}</td>
                     <td>{u.utmMedium ?? '(none)'}</td>
                     <td>{u.utmCampaign ?? '(none)'}</td>
