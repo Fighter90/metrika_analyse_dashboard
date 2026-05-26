@@ -21,6 +21,8 @@ const snapshot: ReportSnapshot = {
   channels: [],
   hypotheses: { problems: [], solutions: [] },
   decisions: [],
+  b2bSummary: { totalTickets: 0, paidTickets: 0, dealsCount: 0, deals: [], byStage: [] },
+  funnel: { visits: 0, b2cApplications: 287, b2bPipelineTickets: 0, b2bPaidTickets: 20 },
   breakdowns: {
     utm: [{ source: 'vk', medium: 'cpc', campaign: 'spring', visits: 80, goalReaches: 4 }],
     geoDevice: [{ country: 'Russia', device: 'mobile', visits: 60, goalReaches: 3 }],

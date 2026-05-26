@@ -72,6 +72,8 @@ const snapshot: ReportSnapshot = {
   ],
   hypotheses: { problems: [hyp({ kind: 'problem' })], solutions: [hyp({ kind: 'solution' })] },
   decisions: [decision],
+  b2bSummary: { totalTickets: 0, paidTickets: 0, dealsCount: 0, deals: [], byStage: [] },
+  funnel: { visits: 100, b2cApplications: 7, b2bPipelineTickets: 0, b2bPaidTickets: 20 },
   breakdowns: { utm: [], geoDevice: [], entryPages: [], exitPages: [] },
 };
 
