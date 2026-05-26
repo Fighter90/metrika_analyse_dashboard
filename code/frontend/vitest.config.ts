@@ -25,6 +25,9 @@ export default defineConfig({
         'src/routes/hypotheses.tsx',
         'src/routes/decisions.tsx',
         'src/routes/sources.tsx',
+        // New files needing dedicated tests (Phase D):
+        'src/routes/settings.tsx',
+        'src/routes/history.tsx',
       ],
       thresholds: { lines: 100, functions: 100, branches: 100, statements: 100 },
     },

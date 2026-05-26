@@ -27,6 +27,24 @@ const snapshot: ReportSnapshot = {
   breakdowns: { utm: [], geoDevice: [], entryPages: [], exitPages: [] },
 };
 
+const snapshotWithData: ReportSnapshot = {
+  ...snapshot,
+  funnel: { visits: 1000, b2cApplications: 50, b2bPipelineTickets: 15, b2bPaidTickets: 20 },
+  b2bSummary: {
+    totalTickets: 35,
+    paidTickets: 20,
+    dealsCount: 2,
+    deals: [
+      { company: 'BigCorp', tickets: 20, stage: 'paid' },
+      { company: 'SmallCo', tickets: 15, stage: 'lead' },
+    ],
+    byStage: [
+      { stage: 'paid', tickets: 20, deals: 1 },
+      { stage: 'lead', tickets: 15, deals: 1 },
+    ],
+  },
+};
+
 const baseProps = {
   snapshot: undefined,
   isPending: false,
@@ -91,6 +109,22 @@ describe('ReportPreviewView', () => {
 
     rerender(<ReportPreviewView {...baseProps} snapshot={snapshot} insightsError="нет ключа" />);
     expect(screen.getByRole('alert')).toHaveTextContent(/нет ключа/);
+  });
+
+  it('shows funnel summary with CR hint when visits > 0', () => {
+    render(<ReportPreviewView {...baseProps} snapshot={snapshotWithData} />);
+    expect(screen.getByText('Визиты')).toBeInTheDocument();
+    expect(screen.getByText('Воронка → Заявки')).toBeInTheDocument();
+    expect(screen.getByText(/CR 5.0%/)).toBeInTheDocument();
+    expect(screen.getByText('B2B в работе')).toBeInTheDocument();
+    expect(screen.getByText('B2B оплачено')).toBeInTheDocument();
+  });
+
+  it('shows B2B summary when there are deals', () => {
+    render(<ReportPreviewView {...baseProps} snapshot={snapshotWithData} />);
+    expect(screen.getByText('B2B-пайплайн')).toBeInTheDocument();
+    expect(screen.getByText(/2 сделок/)).toBeInTheDocument();
+    expect(screen.getByText(/BigCorp/)).toBeInTheDocument();
   });
 });
 
