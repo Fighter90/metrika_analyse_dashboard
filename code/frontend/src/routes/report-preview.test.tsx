@@ -124,7 +124,8 @@ describe('ReportPreviewView', () => {
     render(<ReportPreviewView {...baseProps} snapshot={snapshotWithData} />);
     expect(screen.getByText('B2B-пайплайн')).toBeInTheDocument();
     expect(screen.getByText(/2 сделок/)).toBeInTheDocument();
-    expect(screen.getByText(/BigCorp/)).toBeInTheDocument();
+    expect(screen.getByText(/35 билетов/)).toBeInTheDocument();
+    expect(screen.getByText(/paid/)).toBeInTheDocument();
   });
 });
 
