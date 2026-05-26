@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { formatInt } from '../lib/format';
 
@@ -26,7 +27,7 @@ export function HistoryView({
         role="status"
         className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500"
       >
-        Отчётов пока нет. Сформируйте snapshot на странице Report.
+        Отчётов пока нет. Сформируйте срез данных на странице Report.
       </div>
     );
 
@@ -39,6 +40,7 @@ export function HistoryView({
             <th className="py-1">ID</th>
             <th>Сформирован</th>
             <th>Период</th>
+            <th>Действие</th>
           </tr>
         </thead>
         <tbody>
@@ -48,6 +50,14 @@ export function HistoryView({
               <td>{new Date(s.generatedAt).toLocaleString('ru-RU')}</td>
               <td>
                 {s.dateFrom} — {s.dateTo}
+              </td>
+              <td>
+                <Link
+                  to={`/report?snapshot=${s.id}`}
+                  className="rounded bg-indigo-600 px-3 py-1 text-xs text-white hover:bg-indigo-700"
+                >
+                  Просмотреть
+                </Link>
               </td>
             </tr>
           ))}
