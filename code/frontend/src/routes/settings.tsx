@@ -95,7 +95,10 @@ export function SettingsView({
           type="button"
           onClick={onRefresh}
           disabled={isRefreshing}
-          className="w-full rounded-lg bg-indigo-600 px-6 py-3 text-lg font-semibold text-white disabled:opacity-50 hover:bg-indigo-700"
+          className={
+            'w-full rounded-lg bg-indigo-600 px-6 py-3 text-lg font-semibold text-white ' +
+            'disabled:opacity-50 hover:bg-indigo-700'
+          }
         >
           {isRefreshing ? '⏳ Обновляю данные из Метрики…' : '🔄 Обновить данные из Метрики'}
         </button>
