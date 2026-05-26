@@ -4,13 +4,8 @@ import { FilterBar } from './FilterBar';
 const NAV = [
   ['/', 'Overview'],
   ['/traffic', 'Traffic'],
-  ['/audience', 'Audience'],
   ['/behavior', 'Behavior'],
-  ['/trends', 'Trends'],
   ['/funnel', 'Funnel'],
-  ['/b2b', 'B2B'],
-  ['/hypotheses', 'Hypotheses'],
-  ['/decisions', 'Decisions'],
   ['/report', 'Report'],
   ['/history', 'История'],
   ['/settings', 'Настройки'],

@@ -15,12 +15,8 @@ describe('Layout', () => {
     );
     expect(screen.getByText('Overview')).toBeInTheDocument();
     expect(screen.getByText('Traffic')).toBeInTheDocument();
-    expect(screen.getByText('Audience')).toBeInTheDocument();
     expect(screen.getByText('Behavior')).toBeInTheDocument();
-    expect(screen.getByText('Trends')).toBeInTheDocument();
-    // 'B2B' also appears as a FilterBar segment option, so match the nav link specifically.
-    expect(screen.getByRole('link', { name: 'B2B' })).toBeInTheDocument();
-    expect(screen.getByText('Decisions')).toBeInTheDocument();
+    expect(screen.getByText('Funnel')).toBeInTheDocument();
     expect(screen.getByText('Report')).toBeInTheDocument();
     expect(screen.getByText('История')).toBeInTheDocument();
     expect(screen.getByText('Настройки')).toBeInTheDocument();

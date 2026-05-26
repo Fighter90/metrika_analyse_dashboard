@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { settingsRoutes } from '../../src/routes/settings';
 
@@ -9,8 +9,6 @@ function appWith(): FastifyInstance {
 }
 
 describe('settings routes', () => {
-  afterEach(async () => {});
-
   it('GET /settings returns masked config', async () => {
     const app = appWith();
     const res = await app.inject({ method: 'GET', url: '/settings' });

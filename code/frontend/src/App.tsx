@@ -4,16 +4,11 @@ import { queryClient } from './lib/query';
 import { Layout } from './components/Layout';
 import { Overview } from './routes/overview';
 import { Traffic } from './routes/traffic';
-import { Audience } from './routes/audience';
 import { Behavior } from './routes/behavior';
-import { Trends } from './routes/trends';
-import { B2b } from './routes/b2b';
-import { Hypotheses } from './routes/hypotheses';
-import { Decisions } from './routes/decisions';
-import { ReportPreview } from './routes/report-preview';
 import { Funnel } from './routes/funnel';
-import { Settings } from './routes/settings';
+import { ReportPreview } from './routes/report-preview';
 import { History } from './routes/history';
+import { Settings } from './routes/settings';
 
 export function App(): JSX.Element {
   return (
@@ -23,13 +18,8 @@ export function App(): JSX.Element {
           <Route element={<Layout />}>
             <Route index element={<Overview />} />
             <Route path="traffic" element={<Traffic />} />
-            <Route path="audience" element={<Audience />} />
             <Route path="behavior" element={<Behavior />} />
-            <Route path="trends" element={<Trends />} />
             <Route path="funnel" element={<Funnel />} />
-            <Route path="b2b" element={<B2b />} />
-            <Route path="hypotheses" element={<Hypotheses />} />
-            <Route path="decisions" element={<Decisions />} />
             <Route path="report" element={<ReportPreview />} />
             <Route path="history" element={<History />} />
             <Route path="settings" element={<Settings />} />

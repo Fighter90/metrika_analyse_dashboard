@@ -37,14 +37,6 @@ test.describe('Read-only dashboard pages render their data', () => {
     await expect(page.locator('canvas').nth(1)).toBeVisible();
   });
 
-  test('Audience: country + device charts', async ({ page }) => {
-    await installMocks(page);
-    await page.goto('/audience');
-    await expect(page.getByRole('heading', { name: 'Страна' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Устройство' })).toBeVisible();
-    await expect(page.locator('canvas')).toHaveCount(2);
-  });
-
   test('Behavior: entry + exit pages', async ({ page }) => {
     await installMocks(page);
     await page.goto('/behavior');
@@ -52,13 +44,6 @@ test.describe('Read-only dashboard pages render their data', () => {
     await expect(page.getByRole('heading', { name: 'Страницы выхода' })).toBeVisible();
     await expect(page.getByText('/lp')).toBeVisible();
     await expect(page.getByText('/checkout')).toBeVisible();
-  });
-
-  test('Trends: daily time-series', async ({ page }) => {
-    await installMocks(page);
-    await page.goto('/trends');
-    await expect(page.getByText('Динамика по дням')).toBeVisible();
-    await expect(page.locator('canvas').first()).toBeVisible();
   });
 
   test('Funnel: «заявка ≠ оплата» stages', async ({ page }) => {
@@ -80,12 +65,6 @@ test.describe('Pages surface an error state when the API fails', () => {
   test('Traffic shows an error alert on a 500', async ({ page }) => {
     await installMocks(page, { errors: ['channels', 'utm'] });
     await page.goto('/traffic');
-    await expect(page.getByRole('alert')).toBeVisible();
-  });
-
-  test('Audience shows an error alert on a 500', async ({ page }) => {
-    await installMocks(page, { errors: ['geo-device'] });
-    await page.goto('/audience');
     await expect(page.getByRole('alert')).toBeVisible();
   });
 });
