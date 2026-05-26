@@ -128,7 +128,8 @@ describe('ReportPreviewView', () => {
     expect(screen.getAllByText('B2B-пайплайн').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/2 сделок/)).toBeInTheDocument();
     expect(screen.getByText(/35 билетов/)).toBeInTheDocument();
-    expect(screen.getByText(/paid/)).toBeInTheDocument();
+    // "paid" appears in multiple places, so use getAllByText
+    expect(screen.getAllByText(/paid/).length).toBeGreaterThanOrEqual(1);
   });
 });
 
