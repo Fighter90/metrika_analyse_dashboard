@@ -6,34 +6,41 @@
 
 ## [Unreleased]
 
-## [0.11.0] - 2026-05-25
+## [0.11.0] - 2026-05-26
 
-> Фазы C и D: дашборд (графики Overview, легенды, EmptyState), Настройки, История отчётов, убран Sources.
+> Фазы C–E завершены: дашборд (графики Overview, легенды, EmptyState), Настройки с кнопкой
+> «Обновить данные», История отчётов, AI-гипотезы генерируются автоматически, расширен AI-анализ
+> отчёта, обновлены документация и тесты.
 
 ### Added
 
-- **Настройки (Settings)** — страница `/settings`: ввод OAuth-токена, Client ID/Secret, COUNTER_ID,
-  GOAL_ID, ANTHROPIC_API_KEY. Кнопки «Сохранить» (пишет в `.env`) и «Очистить данные». Backend API:
-  `GET/POST /api/settings`.
+- **Настройки (Settings)** — страница `/settings`: OAuth-токен, Client ID/Secret, COUNTER_ID,
+  GOAL_ID, ANTHROPIC_API_KEY. Кнопки «Сохранить», «Очистить данные» и **«🔄 Обновить данные из
+  Метрики»** (запускает sync последних 14 дней).
 - **История отчётов** — страница `/history`: список снапшотов по датам (ID, сформирован, период).
   Backend API: `GET /api/report/snapshots`.
-- **Overview: мини-графики гео и устройств** — «Топ стран по визитам» (horizontal bar) и «Доля
-  устройств» (donut), загружаются из `/api/metrics/geo-device`.
-- **Легенды на всех графиках** — `channelMixOption` (pie), `deviceShareOption` (donut) теперь
-  включают легенды.
-- **Пустые состояния (EmptyState)** — добавлены в OverviewView и FunnelView для периодов без данных.
+- **AI-гипотезы генерируются автоматически** при `POST /api/report/snapshot` (если задан
+  `ANTHROPIC_API_KEY`). Больше не нужно нажимать отдельную кнопку.
+- **Snapshot расширен**: добавлены поля `b2bSummary` (сделки, итоги, по этапам) и `funnel`
+  (визиты → заявки → B2B pipeline → B2B оплачено).
+- **AI-анализ отчёта расширен**: данные по каналам (топ-12 с CR), UTM, гео+устройства,
+  страницы входа/выхода, B2B сделки, воронка, AI-гипотезы. max_tokens увеличен до 4000.
+- **Overview: мини-графики гео и устройств** — «Топ стран по визитам» (horizontal bar) и
+  «Доля устройств» (donut), загружаются из `/api/metrics/geo-device`.
+- **Легенды на всех графиках** — `channelMixOption` (pie), `deviceShareOption` (donut).
+- **Пустые состояния (EmptyState)** — добавлены в OverviewView и FunnelView.
+- **Report Preview** — показывает B2B summary, funnel metrics, статус AI-гипотез.
 
 ### Changed
 
-- **Навигация:** убрана страница «Sources» (вместо неё прослеживаемость через `raw_responses` в
-  данных), добавлены «История» и «Настройки».
-- **`ReportRunner`** — добавлен метод `list()` для списка снапшотов.
-- **E2E smoke-test** — проверяет навигацию по всем страницам включая новые.
+- **Консолидация страниц дашборда:** удалены B2B, Hypotheses, Decisions, Audience, Trends,
+  Sources. Данные интегрированы в Report, Overview и другие страницы.
+- **Навигация:** Overview → Traffic → Behavior → Funnel → Report → История → Настройки.
 
 ### Removed
 
-- **Страница Sources** (`/sources`) — удалена из навигации и роутинга (согласно спеке 002, фаза D).
-  Антигаллюцинационная прослеживаемость сохраняется на уровне данных (`raw_responses` в SQLite).
+- **Страница Sources** (`/sources`) — прослеживаемость сохраняется на уровне данных.
+- **Отдельные страницы B2B, Hypotheses, Decisions, Audience, Trends** — данные интегрированы.
 
 ## [0.10.0] - 2026-05-22
 
