@@ -371,6 +371,8 @@ describe('reportSections — breakdowns, AI and empty states', () => {
       channels: [],
       hypotheses: { problems: [], solutions: [] },
       decisions: [],
+      b2bSummary: { totalTickets: 0, paidTickets: 0, dealsCount: 0, deals: [], byStage: [] },
+      funnel: { visits: 0, b2cApplications: 0, b2bPipelineTickets: 0, b2bPaidTickets: 0 },
       breakdowns: { utm: [], geoDevice: [], entryPages: [], exitPages: [] },
     };
     expect(findSection(empty, (h) => h.startsWith('Приоритизация'))[0]).toContain(
