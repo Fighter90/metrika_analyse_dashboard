@@ -116,14 +116,16 @@ describe('ReportPreviewView', () => {
     render(<ReportPreviewView {...baseProps} snapshot={snapshotWithData} />);
     expect(screen.getByText('Визиты')).toBeInTheDocument();
     expect(screen.getByText('Воронка → Заявки')).toBeInTheDocument();
-    expect(screen.getByText(/CR 5.0%/)).toBeInTheDocument();
+    // CR hint appears in the funnel section - use getAllByText since it also appears in report sections
+    expect(screen.getAllByText(/CR 5\.0%/).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('B2B в работе')).toBeInTheDocument();
     expect(screen.getByText('B2B оплачено')).toBeInTheDocument();
   });
 
   it('shows B2B summary when there are deals', () => {
     render(<ReportPreviewView {...baseProps} snapshot={snapshotWithData} />);
-    expect(screen.getByText('B2B-пайплайн')).toBeInTheDocument();
+    // B2B-пайплайн appears in both preview and report sections
+    expect(screen.getAllByText('B2B-пайплайн').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/2 сделок/)).toBeInTheDocument();
     expect(screen.getByText(/35 билетов/)).toBeInTheDocument();
     expect(screen.getByText(/paid/)).toBeInTheDocument();
