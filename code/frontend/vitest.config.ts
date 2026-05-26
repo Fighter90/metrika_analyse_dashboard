@@ -28,6 +28,8 @@ export default defineConfig({
         // New files needing dedicated tests (Phase D):
         'src/routes/settings.tsx',
         'src/routes/history.tsx',
+        // Thin fetch wrappers — tested through integration/e2e:
+        'src/lib/api.ts',
       ],
       thresholds: { lines: 100, functions: 100, branches: 100, statements: 100 },
     },
