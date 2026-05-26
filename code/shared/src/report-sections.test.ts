@@ -474,23 +474,23 @@ describe('reportSections — AI-generated hypotheses', () => {
 
 describe('reportSections — new sections', () => {
   it('renders B2B section when b2bSummary is present', () => {
-    const s: ReportSnapshot = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const s = {
       ...baseSnapshot,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any;
-    (s as any).b2bSummary = {
-      totalTickets: 35,
-      paidTickets: 20,
-      dealsCount: 2,
-      deals: [
-        { company: 'BigCorp', tickets: 20, stage: 'paid' },
-        { company: 'SmallCo', tickets: 15, stage: 'lead' },
-      ],
-      byStage: [
-        { stage: 'paid', tickets: 20, deals: 1 },
-        { stage: 'lead', tickets: 15, deals: 1 },
-      ],
-    };
+      b2bSummary: {
+        totalTickets: 35,
+        paidTickets: 20,
+        dealsCount: 2,
+        deals: [
+          { company: 'BigCorp', tickets: 20, stage: 'paid' },
+          { company: 'SmallCo', tickets: 15, stage: 'lead' },
+        ],
+        byStage: [
+          { stage: 'paid', tickets: 20, deals: 1 },
+          { stage: 'lead', tickets: 15, deals: 1 },
+        ],
+      },
+    } as ReportSnapshot & { b2bSummary: unknown };
     const b2bSec = reportSections(s).find((sec) => sec.heading === 'B2B-пайплайн');
     expect(b2bSec).toBeDefined();
     expect(b2bSec?.lines.join('\n')).toContain('BigCorp');
