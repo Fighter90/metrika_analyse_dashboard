@@ -315,6 +315,7 @@ export function ReportPreviewView({
               </p>
             ) : null}
             {narrative ? <AINarrativeView narrative={narrative} /> : null}
+          </div>
 
           <ReportFullView snapshot={snapshot} />
         </div>
