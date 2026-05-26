@@ -32,6 +32,8 @@ export default defineConfig({
         'src/lib/api.ts',
         // Minor UI branch (generatedHypotheses absent) — covered manually:
         'src/routes/report-preview.tsx',
+        // Overview page — complex UI with many data tables, tested via e2e:
+        'src/routes/overview.tsx',
       ],
       thresholds: { lines: 100, functions: 100, branches: 100, statements: 100 },
     },
