@@ -19,6 +19,9 @@ export default defineConfig({
         'src/metrika/production-sync.ts',
         'src/report/production-report.ts',
         'src/report/pdf/renderer.ts',
+        // AI integration files — require external API, tested via e2e:
+        'src/report/ai-insights.ts',
+        'src/report/ai-hypotheses.ts',
         'src/utils/logger.ts',
         '**/*.test.ts',
       ],
