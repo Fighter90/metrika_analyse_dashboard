@@ -48,14 +48,14 @@ export function snapshotFacts(s: ReportSnapshot): string {
 
   // B2B data (may be in the snapshot payload)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const b2bSummary = (s as any).b2bSummary as { deals?: Array<{ company: string; tickets: number; stage: string }>; totalTickets?: number } | undefined;
+  const b2bSummary = (s as any).b2bSummary;
   const b2bDeals = b2bSummary?.deals ?? [];
   const b2bTotal = b2bSummary?.totalTickets ?? s.kpi.b2bPaidTickets;
   const b2bPaid = s.kpi.b2bPaidTickets;
 
   // Funnel data
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const funnel = (s as any).funnel as { visits?: number; b2cApplications?: number; b2bPipelineTickets?: number; b2bPaidTickets?: number } | undefined;
+  const funnel = (s as any).funnel;
   const funnelVisits = funnel?.visits ?? totalVisits;
   const funnelCR = funnelVisits > 0 ? ((s.kpi.b2cApplications / funnelVisits) * 100).toFixed(1) : '0.0';
 
@@ -91,9 +91,8 @@ export function snapshotFacts(s: ReportSnapshot): string {
   );
 
   // AI-generated hypotheses if present
-  const snap = s as Record<string, unknown>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const genHyp = snap.generatedHypotheses as any;
+  const genHyp = (s as any).generatedHypotheses;
   if (genHyp && genHyp.problems.length > 0) {
     lines.push(`AI проблемные гипотезы: ${genHyp.problems.slice(0, 5).map((p) => `${p.id}: ${p.segment} — ${p.trouble}`).join('; ')}.`);
   }
