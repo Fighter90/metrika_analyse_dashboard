@@ -4,7 +4,14 @@ import type { ChannelStat, GeoDeviceStat } from '@pca/shared';
 import { renderWithProviders } from '../test/utils';
 
 vi.mock('../lib/api', () => ({
-  api: { channels: vi.fn(), primaryGoal: vi.fn(), geoDevice: vi.fn() },
+  api: {
+    channels: vi.fn(),
+    primaryGoal: vi.fn(),
+    geoDevice: vi.fn(),
+    utm: vi.fn(),
+    pages: vi.fn(),
+    exitPages: vi.fn(),
+  },
 }));
 import { api } from '../lib/api';
 import { OverviewView, Overview } from './overview';
@@ -90,6 +97,12 @@ describe('OverviewView', () => {
 
 describe('Overview (data wrapper)', () => {
   afterEach(() => vi.resetAllMocks());
+
+  beforeEach(() => {
+    vi.mocked(api.utm).mockResolvedValue([]);
+    vi.mocked(api.pages).mockResolvedValue([]);
+    vi.mocked(api.exitPages).mockResolvedValue([]);
+  });
 
   it('shows the auto-detected goal badge when /primary-goal resolves', async () => {
     vi.mocked(api.channels).mockResolvedValue([sample]);
