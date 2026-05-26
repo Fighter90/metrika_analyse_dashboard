@@ -6,6 +6,7 @@ const NAV = [
   ['/traffic', 'Traffic'],
   ['/behavior', 'Behavior'],
   ['/funnel', 'Funnel'],
+  ['/goals', 'Цели'],
   ['/report', 'Report'],
   ['/history', 'История'],
   ['/settings', 'Настройки'],
