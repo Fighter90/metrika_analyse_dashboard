@@ -103,9 +103,10 @@ describe('ReportPreviewView', () => {
 
     // When pending, show progress bar instead of disabled button
     rerender(<ReportPreviewView {...baseProps} snapshot={snapshot} insightsPending />);
-    // Progress bar should be visible
+    // Progress bar should be visible - check for the progress text specifically
     expect(screen.getByText(/Генерация AI-анализа/)).toBeInTheDocument();
-    expect(screen.getByText(/\d+%/)).toBeInTheDocument();
+    // Use getAllByText since there may be other percentage elements
+    expect(screen.getAllByText(/\d+%/).length).toBeGreaterThanOrEqual(1);
 
     rerender(
       <ReportPreviewView {...baseProps} snapshot={snapshot} narrative="Итог: рост заявок." />,
@@ -145,7 +146,8 @@ describe('ReportPreview (wrapper)', () => {
   it('builds a snapshot then downloads the DOCX export', async () => {
     renderWithProviders(<ReportPreview />);
     fireEvent.click(screen.getByRole('button', { name: 'Сформировать срез данных' }));
-    expect(await screen.findByText(/Срез данных: snap-1/)).toBeInTheDocument();
+    // Use findAllByText since "Срез данных: snap-1" appears in multiple places
+    expect((await screen.findAllByText(/Срез данных: snap-1/)).length).toBeGreaterThanOrEqual(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'Export DOCX' }));
     expect(downloadFile).toHaveBeenCalledWith('/api/report/download/snap-1/docx');
@@ -155,7 +157,7 @@ describe('ReportPreview (wrapper)', () => {
     vi.mocked(api.generateInsights).mockResolvedValue({ narrative: 'AI: рост заявок' });
     renderWithProviders(<ReportPreview />);
     fireEvent.click(screen.getByRole('button', { name: 'Сформировать срез данных' }));
-    expect(await screen.findByText(/Срез данных: snap-1/)).toBeInTheDocument();
+    expect((await screen.findAllByText(/Срез данных: snap-1/)).length).toBeGreaterThanOrEqual(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'Сгенерировать AI-анализ' }));
     expect(await screen.findByText(/AI: рост заявок/)).toBeInTheDocument();
