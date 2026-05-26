@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { ReportSnapshot } from '@pca/shared';
+import type { AnthropicFetch } from '../../src/report/ai-insights';
 import {
   snapshotFacts,
   buildInsightsRequest,
@@ -74,12 +75,12 @@ describe('parseInsights', () => {
 describe('generateInsights', () => {
   it('POSTs to Anthropic with auth headers and returns the narrative', async () => {
     // Mock 10 chunk responses (one per section)
-    const doFetch = vi.fn(async () => ({
+    const doFetch = vi.fn<AnthropicFetch>().mockResolvedValue({
       ok: true,
       status: 200,
       text: async () =>
         JSON.stringify({ content: [{ type: 'text', text: `## Section\n\nанализ` }] }),
-    }));
+    });
     const out = await generateInsights(doFetch, {
       apiKey: 'sk-test',
       model: 'claude-sonnet-4-6',
@@ -89,14 +90,17 @@ describe('generateInsights', () => {
     expect(out).toContain('## Section');
     expect(out).toContain('анализ');
     expect(doFetch).toHaveBeenCalledTimes(10);
-    expect(doFetch.mock.calls[0]?.[0]).toBe(ANTHROPIC_URL);
-    expect(doFetch.mock.calls[0]?.[1].headers['x-api-key']).toBe('sk-test');
-    expect(doFetch.mock.calls[0]?.[1].headers['anthropic-version']).toBeTruthy();
+    const firstCall = doFetch.mock.calls[0];
+    if (firstCall) {
+      expect(firstCall[0]).toBe(ANTHROPIC_URL);
+      expect(firstCall[1].headers['x-api-key']).toBe('sk-test');
+      expect(firstCall[1].headers['anthropic-version']).toBeTruthy();
+    }
   });
 
   it('handles partial failures (some chunks fail, others succeed)', async () => {
     let callCount = 0;
-    const doFetch = vi.fn(async () => {
+    const doFetch = vi.fn<AnthropicFetch>().mockImplementation(async () => {
       callCount++;
       if (callCount <= 2) {
         // First 2 chunks fail
