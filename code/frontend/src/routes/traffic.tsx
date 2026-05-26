@@ -40,7 +40,8 @@ function InsightBadge({
 function computeChannelInsights(stats: ChannelStat[]): JSX.Element[] {
   const insights: JSX.Element[] = [];
   const rows = channelRows(stats);
-  const overallCR = rows.reduce((a, r) => a + r.goalReaches, 0) / rows.reduce((a, r) => a + r.visits, 0) || 0;
+  const overallCR =
+    rows.reduce((a, r) => a + r.goalReaches, 0) / rows.reduce((a, r) => a + r.visits, 0) || 0;
 
   for (const r of rows) {
     // High CR - good
@@ -75,11 +76,19 @@ function computeUtmInsights(utm: UtmStat[], stats: ChannelStat[]): JSX.Element[]
 
   if (cov.ratio >= 0.7) {
     insights.push(
-      <InsightBadge key="utm-good" type="good" text={`UTM покрытие ${formatPercent(cov.ratio)} — хорошая атрибуция`} />,
+      <InsightBadge
+        key="utm-good"
+        type="good"
+        text={`UTM покрытие ${formatPercent(cov.ratio)} — хорошая атрибуция`}
+      />,
     );
   } else {
     insights.push(
-      <InsightBadge key="utm-bad" type="warning" text={`UTM покрытие ${formatPercent(cov.ratio)} — часть трафика не атрибутирована`} />,
+      <InsightBadge
+        key="utm-bad"
+        type="warning"
+        text={`UTM покрытие ${formatPercent(cov.ratio)} — часть трафика не атрибутирована`}
+      />,
     );
   }
 
@@ -205,9 +214,7 @@ export function TrafficView({
             ))}
           </tbody>
         </table>
-        {utmInsights.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">{utmInsights}</div>
-        )}
+        {utmInsights.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{utmInsights}</div>}
       </div>
     </section>
   );

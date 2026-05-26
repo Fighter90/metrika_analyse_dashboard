@@ -120,9 +120,7 @@ function PageTable({
           ))}
         </tbody>
       </table>
-      {insights.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">{insights}</div>
-      )}
+      {insights.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{insights}</div>}
     </div>
   );
 }

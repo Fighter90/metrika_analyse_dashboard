@@ -49,21 +49,28 @@ function computeChannelInsights(stats: ChannelStat[]): JSX.Element[] {
   // Overall conversion assessment
   if (overallCR > 0.05) {
     insights.push(
-      <InsightBadge key="cr-good" type="good" text={`Общий CR ${formatPercent(overallCR)} — выше 5% (хорошо)`} />,
+      <InsightBadge
+        key="cr-good"
+        type="good"
+        text={`Общий CR ${formatPercent(overallCR)} — выше 5% (хорошо)`}
+      />,
     );
   } else if (overallCR < 0.02) {
     insights.push(
-      <InsightBadge key="cr-bad" type="warning" text={`Общий CR ${formatPercent(overallCR)} — ниже 2% (проблема)`} />,
+      <InsightBadge
+        key="cr-bad"
+        type="warning"
+        text={`Общий CR ${formatPercent(overallCR)} — ниже 2% (проблема)`}
+      />,
     );
   }
 
   // Find best and worst channels
-  const channelCRs = stats
-    .reduce<Map<string, { visits: number; reaches: number }>>((acc, c) => {
-      const cur = acc.get(c.channel) ?? { visits: 0, reaches: 0 };
-      acc.set(c.channel, { visits: cur.visits + c.visits, reaches: cur.reaches + c.goalReaches });
-      return acc;
-    }, new Map());
+  const channelCRs = stats.reduce<Map<string, { visits: number; reaches: number }>>((acc, c) => {
+    const cur = acc.get(c.channel) ?? { visits: 0, reaches: 0 };
+    acc.set(c.channel, { visits: cur.visits + c.visits, reaches: cur.reaches + c.goalReaches });
+    return acc;
+  }, new Map());
 
   for (const [channel, data] of channelCRs) {
     const cr = data.visits > 0 ? data.reaches / data.visits : 0;
@@ -99,11 +106,19 @@ function computeUtmInsights(utm: UtmStat[] | undefined): JSX.Element[] {
 
   if (coverage >= 70) {
     insights.push(
-      <InsightBadge key="utm-good" type="good" text={`UTM покрытие ${coverage.toFixed(0)}% — хорошая атрибуция`} />,
+      <InsightBadge
+        key="utm-good"
+        type="good"
+        text={`UTM покрытие ${coverage.toFixed(0)}% — хорошая атрибуция`}
+      />,
     );
   } else {
     insights.push(
-      <InsightBadge key="utm-bad" type="warning" text={`UTM покрытие ${coverage.toFixed(0)}% — часть трафика не атрибутирована`} />,
+      <InsightBadge
+        key="utm-bad"
+        type="warning"
+        text={`UTM покрытие ${coverage.toFixed(0)}% — часть трафика не атрибутирована`}
+      />,
     );
   }
 
@@ -143,14 +158,11 @@ function computeGeoInsights(geoDevice: GeoDeviceStat[] | undefined): JSX.Element
   const insights: JSX.Element[] = [];
   if (!geoDevice || geoDevice.length === 0) return insights;
 
-  const byCountry = geoDevice.reduce<Map<string, { visits: number; reaches: number }>>(
-    (acc, g) => {
-      const cur = acc.get(g.country) ?? { visits: 0, reaches: 0 };
-      acc.set(g.country, { visits: cur.visits + g.visits, reaches: cur.reaches + g.goalReaches });
-      return acc;
-    },
-    new Map(),
-  );
+  const byCountry = geoDevice.reduce<Map<string, { visits: number; reaches: number }>>((acc, g) => {
+    const cur = acc.get(g.country) ?? { visits: 0, reaches: 0 };
+    acc.set(g.country, { visits: cur.visits + g.visits, reaches: cur.reaches + g.goalReaches });
+    return acc;
+  }, new Map());
 
   for (const [country, data] of byCountry) {
     const cr = data.visits > 0 ? data.reaches / data.visits : 0;
@@ -310,9 +322,7 @@ export function OverviewView({
                 ))}
             </tbody>
           </table>
-          {utmInsights.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">{utmInsights}</div>
-          )}
+          {utmInsights.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{utmInsights}</div>}
         </Card>
       )}
 

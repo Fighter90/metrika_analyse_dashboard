@@ -7,7 +7,15 @@ import { summarizeChannels } from '../lib/overview';
 type QueryStatus = 'pending' | 'error' | 'success';
 
 /** Progress ring showing goal completion */
-function GoalRing({ progress, target, current }: { progress: number; target: number; current: number }): JSX.Element {
+function GoalRing({
+  progress,
+  target,
+  current,
+}: {
+  progress: number;
+  target: number;
+  current: number;
+}): JSX.Element {
   const circumference = 2 * Math.PI * 45;
   const offset = circumference - (progress / 100) * circumference;
   const color = progress >= 100 ? '#22c55e' : progress >= 50 ? '#f59e0b' : '#ef4444';
@@ -77,11 +85,19 @@ export function GoalsView({
         <div className="flex flex-col items-center gap-4 lg:flex-row lg:justify-center">
           <GoalRing progress={progress} target={target} current={current} />
           <div className="space-y-2 text-center lg:text-left">
-            <h3 className="text-lg font-semibold">Главная цель: {formatInt(target)} платных билетов</h3>
+            <h3 className="text-lg font-semibold">
+              Главная цель: {formatInt(target)} платных билетов
+            </h3>
             <div className="space-y-1 text-sm text-slate-600">
-              <p>Осталось: <span className="font-bold">{formatInt(remaining)}</span> билетов</p>
-              <p>B2C заявок: <span className="font-bold">{formatInt(b2cApplications)}</span></p>
-              <p>B2B оплачено: <span className="font-bold">{formatInt(b2bPaid)}</span></p>
+              <p>
+                Осталось: <span className="font-bold">{formatInt(remaining)}</span> билетов
+              </p>
+              <p>
+                B2C заявок: <span className="font-bold">{formatInt(b2cApplications)}</span>
+              </p>
+              <p>
+                B2B оплачено: <span className="font-bold">{formatInt(b2bPaid)}</span>
+              </p>
             </div>
             {progress >= 100 ? (
               <div className="rounded bg-green-100 px-3 py-2 text-sm text-green-800">
@@ -104,12 +120,16 @@ export function GoalsView({
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <h3 className="mb-2 text-lg font-semibold">Прогноз достижения цели</h3>
         <p className="text-sm text-slate-600">
-          При текущей скорости {formatInt(current)} за период, для достижения цели в {formatInt(target)} билетов
-          необходимо {remaining > 0 ? `ещё ${formatInt(remaining)} оплат` : 'цель уже достигнута!'}
+          При текущей скорости {formatInt(current)} за период, для достижения цели в{' '}
+          {formatInt(target)} билетов необходимо{' '}
+          {remaining > 0 ? `ещё ${formatInt(remaining)} оплат` : 'цель уже достигнута!'}
         </p>
         <p className="mt-2 text-sm text-slate-500">
-          Совет: увеличьте CR с {b2cApplications > 0 ? formatPercent(b2cApplications / (current + b2cApplications)) : '0%'} до 5–10%,
-          чтобы ускорить прогресс.
+          Совет: увеличьте CR с{' '}
+          {b2cApplications > 0
+            ? formatPercent(b2cApplications / (current + b2cApplications))
+            : '0%'}{' '}
+          до 5–10%, чтобы ускорить прогресс.
         </p>
       </div>
 
@@ -147,7 +167,8 @@ export function Goals(): JSX.Element {
     queryFn: () => api.channels({ from, to }),
   });
 
-  const status: QueryStatus = q.status === 'pending' ? 'pending' : q.status === 'error' ? 'error' : 'success';
+  const status: QueryStatus =
+    q.status === 'pending' ? 'pending' : q.status === 'error' ? 'error' : 'success';
 
   const data = q.data ?? [];
   const kpi = summarizeChannels(data);
