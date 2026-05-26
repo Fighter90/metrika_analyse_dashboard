@@ -40,7 +40,12 @@ export default defineConfig({
         // Traffic page — complex UI with insights, tested via e2e:
         'src/routes/traffic.tsx',
       ],
-      thresholds: { lines: 93, functions: 90, branches: 98, statements: 93 },
+      thresholds: {
+        lines: 93,
+        functions: 90,
+        branches: 98,
+        statements: 93,
+      },
     },
   },
 });
