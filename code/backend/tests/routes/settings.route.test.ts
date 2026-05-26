@@ -1,6 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import Fastify, { type FastifyInstance } from 'fastify';
-import { settingsRoutes } from '../../src/routes/settings';
+import * as fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { settingsRoutes, mask, readEnvFile } from '../../src/routes/settings';
+
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../..');
+const ENV_PATH = join(REPO_ROOT, '.env');
+const ENV_BACKUP = join(REPO_ROOT, '.env.backup');
 
 function appWith(): FastifyInstance {
   const app = Fastify();
@@ -71,5 +78,62 @@ describe('settings routes', () => {
     });
     expect(res.statusCode).toBe(200);
     await app.close();
+  });
+});
+
+describe('mask (unit)', () => {
+  it('returns **** for empty string', () => {
+    expect(mask('')).toBe('****');
+  });
+
+  it('returns **** for short strings (<=8 chars)', () => {
+    expect(mask('short')).toBe('****');
+    expect(mask('12345678')).toBe('****');
+  });
+
+  it('masks long strings showing first 4 and last 2', () => {
+    expect(mask('abcdefghijklmnop')).toBe('abcd****op');
+    expect(mask('test-token-xxxx')).toBe('test****xx');
+  });
+});
+
+describe('readEnvFile (unit)', () => {
+  afterEach(() => {
+    // Restore original .env if we backed it up
+    if (fs.existsSync(ENV_BACKUP)) {
+      fs.renameSync(ENV_BACKUP, ENV_PATH);
+    }
+  });
+
+  it('returns {} when .env does not exist', () => {
+    // Temporarily move .env away
+    if (fs.existsSync(ENV_PATH)) {
+      fs.renameSync(ENV_PATH, ENV_BACKUP);
+    }
+    const result = readEnvFile();
+    expect(result).toEqual({});
+    // Restore
+    if (fs.existsSync(ENV_BACKUP)) {
+      fs.renameSync(ENV_BACKUP, ENV_PATH);
+    }
+  });
+
+  it('parses key=value lines and skips comments/blanks/lines-without-eq', () => {
+    // Save original .env
+    const hadEnv = fs.existsSync(ENV_PATH);
+    if (hadEnv) fs.renameSync(ENV_PATH, ENV_BACKUP);
+
+    // Write a test .env with various line types
+    fs.writeFileSync(
+      ENV_PATH,
+      ['# comment line', 'VALID_KEY=value', 'no_equals_here', '', 'ANOTHER=123'].join('\n'),
+    );
+
+    const result = readEnvFile();
+    expect(result).toEqual({ VALID_KEY: 'value', ANOTHER: '123' });
+
+    // Restore original .env
+    fs.unlinkSync(ENV_PATH);
+    if (hadEnv) fs.renameSync(ENV_BACKUP, ENV_PATH);
   });
 });

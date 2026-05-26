@@ -27,13 +27,13 @@ const SettingsInput = z.object({
 });
 
 /** Mask a secret value for display: show first 4 chars + **** */
-function mask(val: string): string {
+export function mask(val: string): string {
   if (!val || val.length <= 8) return '****';
   return val.slice(0, 4) + '****' + val.slice(-2);
 }
 
 /** Read current .env values and return them with sensitive fields masked. */
-function readEnvFile(): Record<string, string> {
+export function readEnvFile(): Record<string, string> {
   if (!existsSync(ENV_PATH)) return {};
   const content = readFileSync(ENV_PATH, 'utf-8');
   const result: Record<string, string> = {};
