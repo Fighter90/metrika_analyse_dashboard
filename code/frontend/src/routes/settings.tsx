@@ -393,6 +393,8 @@ export function Settings(): JSX.Element {
     },
   });
 
+  const initialCounterId = useRef<string | null>(null);
+
   const settings: SettingsForm | undefined = q.data
     ? {
         // Don't use masked values from API — keep secrets empty so they aren't overwritten
@@ -405,6 +407,13 @@ export function Settings(): JSX.Element {
       }
     : undefined;
 
+  // Track initial COUNTER_ID to avoid overwriting .env on every save
+  useEffect(() => {
+    if (settings && initialCounterId.current === null) {
+      initialCounterId.current = settings.COUNTER_ID;
+    }
+  }, [settings]);
+
   return (
     <SettingsView
       status={q.status}
@@ -415,11 +424,13 @@ export function Settings(): JSX.Element {
       onSave={(form) => {
         // Don't send masked or empty secret values back to the server
         const isMasked = (v: string) => v.includes('****');
+        // Only send COUNTER_ID if it has been changed from the initial value
+        const counterIdChanged = form.COUNTER_ID !== initialCounterId.current;
         saveMut.mutate({
           YANDEX_OAUTH_TOKEN: (form.YANDEX_OAUTH_TOKEN && !isMasked(form.YANDEX_OAUTH_TOKEN)) ? form.YANDEX_OAUTH_TOKEN : undefined,
           YANDEX_CLIENT_ID: form.YANDEX_CLIENT_ID || undefined,
           YANDEX_CLIENT_SECRET: (form.YANDEX_CLIENT_SECRET && !isMasked(form.YANDEX_CLIENT_SECRET)) ? form.YANDEX_CLIENT_SECRET : undefined,
-          COUNTER_ID: form.COUNTER_ID ? Number(form.COUNTER_ID) : undefined,
+          COUNTER_ID: counterIdChanged && form.COUNTER_ID ? Number(form.COUNTER_ID) : undefined,
           GOAL_ID: form.GOAL_ID ? Number(form.GOAL_ID) : undefined,
           ANTHROPIC_API_KEY: (form.ANTHROPIC_API_KEY && !isMasked(form.ANTHROPIC_API_KEY)) ? form.ANTHROPIC_API_KEY : undefined,
         });
