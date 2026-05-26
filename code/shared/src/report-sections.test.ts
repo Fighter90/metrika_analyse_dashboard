@@ -471,3 +471,53 @@ describe('reportSections — AI-generated hypotheses', () => {
     ).toContain('ещё не сгенерированы');
   });
 });
+
+describe('reportSections — new sections', () => {
+  it('renders B2B section when b2bSummary is present', () => {
+    const s: ReportSnapshot = {
+      ...baseSnapshot,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+    (s as any).b2bSummary = {
+      totalTickets: 35,
+      paidTickets: 20,
+      dealsCount: 2,
+      deals: [
+        { company: 'BigCorp', tickets: 20, stage: 'paid' },
+        { company: 'SmallCo', tickets: 15, stage: 'lead' },
+      ],
+      byStage: [
+        { stage: 'paid', tickets: 20, deals: 1 },
+        { stage: 'lead', tickets: 15, deals: 1 },
+      ],
+    };
+    const b2bSec = reportSections(s).find((sec) => sec.heading === 'B2B-пайплайн');
+    expect(b2bSec).toBeDefined();
+    expect(b2bSec?.lines.join('\n')).toContain('BigCorp');
+    expect(b2bSec?.lines.join('\n')).toContain('SmallCo');
+  });
+
+  it('renders detailed channel analysis section', () => {
+    const lines = reportSections(baseSnapshot)
+      .find((sec) => sec.heading === 'Анализ по каналам (детальный)')
+      ?.lines.join('\n') ?? '';
+    expect(lines).toContain('podcast');
+    expect(lines).toContain('Визиты: 100');
+  });
+
+  it('parses chunked AI narrative into sections', () => {
+    // The parseChunkedNarrative function is tested indirectly through reportSections
+    // when aiNarrative is present. Here we test the fallback case.
+    const s: ReportSnapshot = {
+      ...baseSnapshot,
+      aiNarrative: '## Test Section\n\nSome content\n\n---\n\n## Another Section\n\nMore content',
+    };
+    const sections = reportSections(s);
+    const testSec = sections.find((sec) => sec.heading === 'Test Section');
+    const anotherSec = sections.find((sec) => sec.heading === 'Another Section');
+    expect(testSec).toBeDefined();
+    expect(testSec?.lines.join(' ')).toContain('Some content');
+    expect(anotherSec).toBeDefined();
+    expect(anotherSec?.lines.join(' ')).toContain('More content');
+  });
+});
