@@ -159,7 +159,7 @@ export function B2bView({
                         type="button"
                         aria-label={`Удалить ${d.company}`}
                         onClick={() => onRemove(d.id)}
-                        className="text-red-600"
+                        className="text-red-700"
                       >
                         ✕
                       </button>

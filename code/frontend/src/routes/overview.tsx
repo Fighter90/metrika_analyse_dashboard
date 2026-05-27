@@ -216,7 +216,7 @@ export function OverviewView({
   if (status === 'pending') return <p className="text-slate-500">Загрузка…</p>;
   if (status === 'error')
     return (
-      <p role="alert" className="text-red-600">
+      <p role="alert" className="text-red-700">
         Не удалось загрузить данные. Запустите sync и проверьте backend.
       </p>
     );
@@ -326,7 +326,7 @@ export function OverviewView({
       {/* UTM breakdown */}
       {utm && utm.length > 0 && (
         <Card title={`UTM-разбивка (покрытие ${utmCoveragePct}%)`}>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="UTM-разбивка">
             <table className="w-full min-w-[36rem] text-sm">
               <thead>
                 <tr className="text-left text-slate-500">
@@ -365,7 +365,7 @@ export function OverviewView({
       {/* Entry pages */}
       {topEntry.length > 0 && (
         <Card title="Топ страниц входа">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Топ страниц">
             <table className="w-full min-w-[28rem] text-sm">
               <thead>
                 <tr className="text-left text-slate-500">
@@ -396,7 +396,7 @@ export function OverviewView({
       {/* Exit pages */}
       {topExit.length > 0 && (
         <Card title="Топ страниц выхода">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Топ страниц">
             <table className="w-full min-w-[28rem] text-sm">
               <thead>
                 <tr className="text-left text-slate-500">
@@ -473,7 +473,7 @@ function OnboardingCard(): JSX.Element | null {
         type="button"
         onClick={dismiss}
         aria-label="Закрыть подсказку"
-        className="absolute right-3 top-3 text-indigo-400 hover:text-indigo-700"
+        className="absolute right-3 top-3 text-indigo-600 hover:text-indigo-700"
       >
         ✕
       </button>
@@ -545,14 +545,14 @@ function Kpi({ label, value, hint }: { label: string; value: string; hint?: stri
     <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div className="text-xs uppercase tracking-wide text-slate-500">{label}</div>
       <div className="mt-1 text-2xl font-bold">{value}</div>
-      {hint ? <div className="mt-1 text-xs text-amber-600">{hint}</div> : null}
+      {hint ? <div className="mt-1 text-xs text-amber-700">{hint}</div> : null}
     </div>
   );
 }
 
 /** WoW delta chip: green when up, red when down, grey when flat/unknown. */
 function Delta({ ratio }: { ratio: number }): JSX.Element {
-  const tone = ratio > 0 ? 'text-green-700' : ratio < 0 ? 'text-red-700' : 'text-slate-400';
+  const tone = ratio > 0 ? 'text-green-700' : ratio < 0 ? 'text-red-700' : 'text-slate-500';
   const arrow = ratio > 0 ? '▲' : ratio < 0 ? '▼' : '→';
   return (
     <span className={`text-xs font-medium ${tone}`}>

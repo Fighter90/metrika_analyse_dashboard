@@ -76,7 +76,7 @@ function GoalCombobox({
             if (items.length === 0) return null;
             return (
               <div key={group}>
-                <div className="px-3 py-1 text-xs uppercase text-slate-400">{title}</div>
+                <div className="px-3 py-1 text-xs uppercase text-slate-500">{title}</div>
                 {items.map((o) => (
                   <Combobox.Option
                     key={o.value}
@@ -90,7 +90,7 @@ function GoalCombobox({
             );
           })}
           {filtered.length === 0 ? (
-            <div className="px-3 py-1.5 text-slate-400">Ничего не найдено</div>
+            <div className="px-3 py-1.5 text-slate-500">Ничего не найдено</div>
           ) : null}
         </Combobox.Options>
       </div>
@@ -287,7 +287,7 @@ export function SettingsView({
   if (status === 'pending') return <p className="text-slate-500">Загрузка…</p>;
   if (status === 'error')
     return (
-      <p role="alert" className="text-red-600">
+      <p role="alert" className="text-red-700">
         Не удалось загрузить настройки.
       </p>
     );
@@ -367,7 +367,7 @@ export function SettingsView({
             </ul>
           </div>
         ) : null}
-        <p className="mt-2 text-xs text-indigo-400">
+        <p className="mt-2 text-xs text-indigo-600">
           {syncPeriod
             ? `Период из текущего фильтра (${syncPeriod.from} — ${syncPeriod.to}) → SQLite → перегенерация отчётов`
             : 'Период из текущего фильтра → SQLite → перегенерация отчётов'}
@@ -412,7 +412,7 @@ export function SettingsView({
             goals={goals}
             archivedGoals={archivedGoals}
           />
-          <p className="mt-0.5 text-xs text-slate-400">
+          <p className="mt-0.5 text-xs text-slate-500">
             0 = определить автоматически, выберите ID — зафиксировать цель. Всего:{' '}
             {goals?.length ?? 0} активных, {archivedGoals?.length ?? 0} архивных.
           </p>
@@ -489,7 +489,7 @@ function Field({
         placeholder={placeholder}
         className="mt-1 block w-full rounded border border-slate-300 px-3 py-2 text-sm"
       />
-      {hint ? <p className="mt-0.5 text-xs text-slate-400">{hint}</p> : null}
+      {hint ? <p className="mt-0.5 text-xs text-slate-500">{hint}</p> : null}
     </div>
   );
 }

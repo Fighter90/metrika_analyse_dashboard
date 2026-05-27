@@ -16,7 +16,7 @@ export function HistoryView({
   if (status === 'pending') return <p className="text-slate-500">Загрузка…</p>;
   if (status === 'error')
     return (
-      <p role="alert" className="text-red-600">
+      <p role="alert" className="text-red-700">
         Не удалось загрузить историю отчётов.
       </p>
     );
@@ -34,7 +34,7 @@ export function HistoryView({
   return (
     <section className="space-y-4">
       <h2 className="text-lg font-semibold">История отчётов</h2>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="История отчётов">
         <table className="w-full min-w-[32rem] text-sm">
           <thead>
             <tr className="text-left text-slate-500">

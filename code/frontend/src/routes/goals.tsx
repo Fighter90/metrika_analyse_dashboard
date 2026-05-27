@@ -22,6 +22,8 @@ function GoalRing({
   const circumference = 2 * Math.PI * 45;
   const offset = circumference - (progress / 100) * circumference;
   const color = progress >= 100 ? '#22c55e' : progress >= 50 ? '#f59e0b' : '#ef4444';
+  // Darker shades for the text label so it meets WCAG AA contrast (the ring is a graphic, exempt).
+  const textColor = progress >= 100 ? '#15803d' : progress >= 50 ? '#b45309' : '#b91c1c';
 
   return (
     <div className="flex flex-col items-center">
@@ -47,7 +49,7 @@ function GoalRing({
           из {formatInt(target)}
         </text>
       </svg>
-      <span className="mt-2 text-sm font-medium" style={{ color }}>
+      <span className="mt-2 text-sm font-medium" style={{ color: textColor }}>
         {progress.toFixed(1)}% достигнуто
       </span>
     </div>
@@ -133,7 +135,7 @@ function WhatIfCard({
         <div className="rounded bg-slate-50 px-3 py-2">
           <div className="text-xs text-slate-500">Заявки</div>
           <div className="text-xl font-bold">{formatInt(sim.projectedApplications)}</div>
-          <div className="text-xs text-slate-400">
+          <div className="text-xs text-slate-500">
             {sim.addedVsNow >= 0 ? '+' : ''}
             {formatInt(sim.addedVsNow)} к текущему
           </div>
@@ -145,7 +147,7 @@ function WhatIfCard({
         <div className="rounded bg-slate-50 px-3 py-2">
           <div className="text-xs text-slate-500">Gap до цели</div>
           <div
-            className={`text-xl font-bold ${sim.gapAfter === 0 ? 'text-green-600' : 'text-red-600'}`}
+            className={`text-xl font-bold ${sim.gapAfter === 0 ? 'text-green-700' : 'text-red-700'}`}
           >
             {formatInt(sim.gapAfter)}
           </div>
@@ -180,7 +182,7 @@ export function GoalsView({
   if (status === 'pending') return <p className="text-slate-500">Загрузка…</p>;
   if (status === 'error')
     return (
-      <p role="alert" className="text-red-600">
+      <p role="alert" className="text-red-700">
         Не удалось загрузить данные о целях.
       </p>
     );
@@ -206,7 +208,7 @@ export function GoalsView({
             </h3>
             <div className="space-y-1 text-sm text-slate-600">
               <p>
-                Осталось: <span className="font-bold text-red-600">{formatInt(remaining)}</span>{' '}
+                Осталось: <span className="font-bold text-red-700">{formatInt(remaining)}</span>{' '}
                 билетов
               </p>
               <div className="rounded bg-slate-50 px-3 py-2">
@@ -221,7 +223,7 @@ export function GoalsView({
               </div>
               <div className="rounded bg-slate-50 px-3 py-2">
                 <p className="font-medium">
-                  B2B оплачено: <span className="text-green-600">{formatInt(b2bPaid)}</span>
+                  B2B оплачено: <span className="text-green-700">{formatInt(b2bPaid)}</span>
                 </p>
                 <p className="text-xs text-slate-500">
                   В воронке: {formatInt(b2bPipeline)} билетов ({deals.length} сделок)
@@ -254,7 +256,7 @@ export function GoalsView({
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="text-xs text-slate-500">Общий CR</div>
           <div
-            className={`text-2xl font-bold ${overallCR > 0.02 ? 'text-green-600' : overallCR > 0.01 ? 'text-amber-600' : 'text-red-600'}`}
+            className={`text-2xl font-bold ${overallCR > 0.02 ? 'text-green-700' : overallCR > 0.01 ? 'text-amber-700' : 'text-red-700'}`}
           >
             {formatPercent(overallCR)}
           </div>
@@ -266,7 +268,7 @@ export function GoalsView({
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="text-xs text-slate-500">Прогресс</div>
           <div
-            className={`text-2xl font-bold ${progress >= 50 ? 'text-amber-600' : 'text-red-600'}`}
+            className={`text-2xl font-bold ${progress >= 50 ? 'text-amber-700' : 'text-red-700'}`}
           >
             {progress.toFixed(1)}%
           </div>
@@ -291,11 +293,11 @@ export function GoalsView({
                 {deals.map((d) => {
                   const stageColor =
                     d.stage === 'paid'
-                      ? 'text-green-600'
+                      ? 'text-green-700'
                       : d.stage === 'invoiced'
                         ? 'text-blue-600'
                         : d.stage === 'negotiation'
-                          ? 'text-amber-600'
+                          ? 'text-amber-700'
                           : 'text-slate-500';
                   const stageLabel =
                     d.stage === 'paid'
@@ -337,7 +339,7 @@ export function GoalsView({
           </p>
           <p>
             Для достижения цели в {formatInt(target)} билетов необходимо ещё{' '}
-            <span className="font-bold text-red-600">{formatInt(remaining)}</span> оплат.
+            <span className="font-bold text-red-700">{formatInt(remaining)}</span> оплат.
           </p>
         </div>
       </div>

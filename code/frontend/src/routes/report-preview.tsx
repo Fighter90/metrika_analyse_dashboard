@@ -21,7 +21,7 @@ function Stat({
     <div className="rounded border border-slate-200 p-2">
       <div className="text-xs uppercase text-slate-500">{label}</div>
       <div className="text-lg font-bold">{value}</div>
-      {hint ? <div className="text-xs text-slate-400">{hint}</div> : null}
+      {hint ? <div className="text-xs text-slate-500">{hint}</div> : null}
     </div>
   );
 }
@@ -310,7 +310,7 @@ export function ReportPreviewView({
               </button>
             )}
             {insightsError ? (
-              <p role="alert" className="text-xs text-red-600">
+              <p role="alert" className="text-xs text-red-700">
                 AI-анализ недоступен: {insightsError}
               </p>
             ) : null}

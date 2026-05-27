@@ -140,8 +140,8 @@ export function FilterBar(): JSX.Element {
                 Применить
               </button>
             </div>
-            {dateError && <p className="text-xs text-red-600">{dateError}</p>}
-            <p className="text-xs text-indigo-400">Макс. период: 365 дней (1 год)</p>
+            {dateError && <p className="text-xs text-red-700">{dateError}</p>}
+            <p className="text-xs text-indigo-600">Макс. период: 365 дней (1 год)</p>
             <button
               type="button"
               onClick={() => setShowCustom(false)}

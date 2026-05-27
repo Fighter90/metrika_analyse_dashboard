@@ -24,7 +24,7 @@ function WowStat({
     <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <div className="text-xs uppercase tracking-wide text-slate-500">{label}</div>
       <div className="mt-1 text-2xl font-bold">{formatInt(current)}</div>
-      <div className={`mt-1 text-xs ${up ? 'text-green-600' : 'text-red-600'}`}>
+      <div className={`mt-1 text-xs ${up ? 'text-green-700' : 'text-red-700'}`}>
         {up ? '▲' : '▼'} {formatPercent(Math.abs(delta))} WoW
       </div>
     </div>
@@ -42,7 +42,7 @@ export function TrendsView({
   if (status === 'pending') return <p className="text-slate-500">Загрузка…</p>;
   if (status === 'error')
     return (
-      <p role="alert" className="text-red-600">
+      <p role="alert" className="text-red-700">
         Не удалось загрузить тренды.
       </p>
     );
