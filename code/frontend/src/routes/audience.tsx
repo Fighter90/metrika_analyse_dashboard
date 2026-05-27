@@ -11,6 +11,7 @@ import {
   type AudienceRow,
 } from '../lib/audience';
 import { EChart } from '../components/charts/EChart';
+import { ChartCaption } from '../components/charts/ChartCaption';
 import { EmptyState } from '../components/EmptyState';
 import type { QueryStatus } from '../lib/query-status';
 
@@ -69,9 +70,19 @@ export function AudienceView({
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <EChart option={audienceBarOption(countries, 'Топ стран по визитам')} />
+          <ChartCaption
+            correct="Топ стран по визитам из geo_device_stats — география аудитории."
+            caveat="Страна определяется по IP; VPN и роуминг искажают распределение."
+            advice="Сверяйте CR ключевых стран в воронке — объём визитов не равен объёму оплат."
+          />
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <EChart option={deviceShareOption(devices)} />
+          <ChartCaption
+            correct="Доли desktop/mobile/tablet по визитам из geo_device_stats."
+            caveat="Доля по визитам не равна доле по оплатам — мобильные часто конвертят хуже."
+            advice="При высокой доле mobile проверьте мобильную вёрстку лендинга и форм заявки."
+          />
         </div>
       </div>
       <AudienceTable title="Страна" rows={countries} />

@@ -5,6 +5,7 @@ import { useFilters } from '../store/filters';
 import { formatInt, formatPercent } from '../lib/format';
 import { pageRows, type PageRow } from '../lib/behavior';
 import { EChart } from '../components/charts/EChart';
+import { ChartCaption } from '../components/charts/ChartCaption';
 import { EmptyState } from '../components/EmptyState';
 import { combineStatus, type QueryStatus } from '../lib/query-status';
 
@@ -369,9 +370,19 @@ export function BehaviorView({
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <EChart option={crBarOption(entryRows, 'Конверсия страниц входа')} />
+          <ChartCaption
+            correct="CR страниц входа = заявки / визиты по URL входа из page_stats."
+            caveat="У страниц с малым трафиком CR шумный; лендинг с высоким CR, но малым трафиком — не приоритет."
+            advice="Масштабируйте трафик на страницы с высоким CR и достаточным объёмом визитов."
+          />
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <EChart option={bounceBarOption(entryRows, 'Отказы страниц входа')} />
+          <ChartCaption
+            correct="Доля отказов по страницам входа из page_stats — где посетитель уходит сразу."
+            caveat="Высокий отказ на длинном лендинге может быть нормой (прочитал и закрыл), не всегда проблема."
+            advice="Связывайте высокий отказ с низким CR той же страницы — это и есть кандидат на доработку."
+          />
         </div>
       </div>
 
@@ -379,6 +390,11 @@ export function BehaviorView({
       {exitRows.length > 0 && (
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <EChart option={bounceBarOption(exitRows, 'Отказы страниц выхода')} />
+          <ChartCaption
+            correct="Отказы по страницам выхода из exit_page_stats — где обрывается путь к заявке."
+            caveat="Метрика не отдаёт ym:s:exitURL для нашего счётчика — таблица часто пустая, и блок тогда скрыт."
+            advice="При наличии данных ищите страницы выхода перед формой заявки — там теряются оплаты."
+          />
         </div>
       )}
 

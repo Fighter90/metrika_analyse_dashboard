@@ -11,6 +11,7 @@ import { utmCoverage } from '../lib/traffic';
 import { dailySeries, trendsOption } from '../lib/trends';
 import { byCountry, byDevice, audienceBarOption, deviceShareOption } from '../lib/audience';
 import { EChart } from '../components/charts/EChart';
+import { ChartCaption } from '../components/charts/ChartCaption';
 import { filterBySegment, filterUtmBySegment } from '../lib/segment-filter';
 import { buildHypothesisUrl } from '../lib/hypothesis-prefill';
 import { shouldShowOnboarding, markOnboarded } from '../lib/onboarding';
@@ -271,10 +272,20 @@ export function OverviewView({
         {channelInsights.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">{channelInsights}</div>
         )}
+        <ChartCaption
+          correct="Две линии (визиты и заявки) по дням из channel_stats — видна динамика и совпадение всплесков."
+          caveat="Заявки на порядок меньше визитов — на общей оси линия заявок может казаться плоской."
+          advice="Смотрите не на абсолют, а на синхронность всплесков: рост визитов без роста заявок — сигнал к проверке трафика."
+        />
       </Card>
 
       <Card title="Микс каналов (визиты)">
         <EChart option={channelMixOption(stats)} />
+        <ChartCaption
+          correct="Доли визитов по каналам из channel_stats — структура источников трафика."
+          caveat="Это доли визитов, не оплат; крупный по визитам канал может почти не давать продаж."
+          advice="Сопоставляйте с воронкой по каналам — оценивайте вклад в заявки, а не только размер."
+        />
       </Card>
 
       {hasGeo ? (
@@ -284,9 +295,19 @@ export function OverviewView({
             {geoInsights.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">{geoInsights}</div>
             )}
+            <ChartCaption
+              correct="Топ стран по визитам из geo_device_stats — где находится аудитория."
+              caveat="Гео определяется по IP; VPN и роуминг могут искажать распределение."
+              advice="Проверяйте CR ключевых стран в воронке — больше визитов не всегда означает больше оплат."
+            />
           </Card>
           <Card title="Доля устройств (визиты)">
             <EChart option={deviceShareOption(devRows)} />
+            <ChartCaption
+              correct="Доли desktop/mobile/tablet по визитам из geo_device_stats."
+              caveat="Доля устройств по визитам не равна доле по оплатам — мобильные часто конвертят хуже."
+              advice="Если mobile даёт большую долю визитов, проверьте мобильную версию лендинга и форм."
+            />
           </Card>
         </div>
       ) : null}
