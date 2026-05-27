@@ -24,7 +24,6 @@ export default defineConfig({
         'src/routes/b2b.tsx',
         'src/routes/hypotheses.tsx',
         'src/routes/decisions.tsx',
-        'src/routes/sources.tsx',
         // New files needing dedicated tests (Phase D):
         'src/routes/settings.tsx',
         'src/routes/history.tsx',

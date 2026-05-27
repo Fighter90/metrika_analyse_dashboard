@@ -6,7 +6,7 @@ test.describe('Report — snapshot, on-screen render, export, AI', () => {
     await installMocks(page);
     await page.goto('/report');
     await page.getByRole('button', { name: 'Сформировать срез данных' }).click();
-    await expect(page.getByText(/Срез данных: snap-e2e/)).toBeVisible();
+    await expect(page.getByText(/Срез данных: snap-e2e/).first()).toBeVisible();
 
     const full = page.getByRole('article', { name: 'Полный отчёт' });
     await expect(full).toBeVisible();
@@ -26,7 +26,7 @@ test.describe('Report — snapshot, on-screen render, export, AI', () => {
     await installMocks(page);
     await page.goto('/report');
     await page.getByRole('button', { name: 'Сформировать срез данных' }).click();
-    await expect(page.getByText(/Срез данных: snap-e2e/)).toBeVisible();
+    await expect(page.getByText(/Срез данных: snap-e2e/).first()).toBeVisible();
 
     const [docx] = await Promise.all([
       page.waitForEvent('download'),
