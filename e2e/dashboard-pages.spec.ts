@@ -9,12 +9,12 @@ test.describe('Read-only dashboard pages render their data', () => {
     await page.goto('/');
     await expect(page.getByText('Цель (платных билетов)')).toBeVisible();
     await expect(page.getByText(/Заявок/)).toBeVisible();
-    await expect(page.getByText(/Слабые места/)).toBeVisible();
-    // Charts: trends, daily reaches, channel mix, geo bar, device donut
-    await expect(page.locator('canvas')).toHaveCount(5);
+    await expect(page.getByRole('heading', { name: /Слабые места/ })).toBeVisible();
+    // Charts: «визиты и заявки по дням», channel mix, geo bar, device donut
+    await expect(page.locator('canvas')).toHaveCount(4);
     // Geo/device mini-charts on Overview
-    await expect(page.getByText('Топ стран по визитам')).toBeVisible();
-    await expect(page.getByText('Доля устройств (визиты)')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Топ стран по визитам' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Доля устройств (визиты)' })).toBeVisible();
     // The auto-detected KPI goal is surfaced (no manual GOAL_ID needed).
     await expect(page.getByText(/KPI-цель определена автоматически/)).toBeVisible();
     await expect(page.getByText('Ecommerce: покупка')).toBeVisible();
@@ -42,8 +42,8 @@ test.describe('Read-only dashboard pages render their data', () => {
     await page.goto('/behavior');
     await expect(page.getByRole('heading', { name: 'Страницы входа' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Страницы выхода' })).toBeVisible();
-    await expect(page.getByText('/lp')).toBeVisible();
-    await expect(page.getByText('/checkout')).toBeVisible();
+    await expect(page.getByRole('cell', { name: '/lp' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: '/checkout' })).toBeVisible();
   });
 
   test('Funnel: «заявка ≠ оплата» stages', async ({ page }) => {
