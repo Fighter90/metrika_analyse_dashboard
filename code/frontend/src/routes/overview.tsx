@@ -257,7 +257,7 @@ export function OverviewView({
         </div>
       ) : null}
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Kpi label="Цель (платных билетов)" value={formatInt(kpi.target)} />
         <Kpi label="Заявок B2C" value={formatInt(kpi.applications)} hint="заявка ≠ оплата" />
         <Kpi label="Оплачено B2B" value={formatInt(kpi.b2bPaid)} />

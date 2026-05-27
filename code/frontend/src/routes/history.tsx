@@ -34,35 +34,37 @@ export function HistoryView({
   return (
     <section className="space-y-4">
       <h2 className="text-lg font-semibold">История отчётов</h2>
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-slate-500">
-            <th className="py-1">ID</th>
-            <th>Сформирован</th>
-            <th>Период</th>
-            <th>Действие</th>
-          </tr>
-        </thead>
-        <tbody>
-          {snapshots.map((s) => (
-            <tr key={s.id} className="border-t border-slate-100">
-              <td className="py-1 font-mono text-xs">{s.id}</td>
-              <td>{new Date(s.generatedAt).toLocaleString('ru-RU')}</td>
-              <td>
-                {s.dateFrom} — {s.dateTo}
-              </td>
-              <td>
-                <Link
-                  to={`/report?snapshot=${s.id}`}
-                  className="rounded bg-indigo-600 px-3 py-1 text-xs text-white hover:bg-indigo-700"
-                >
-                  Просмотреть
-                </Link>
-              </td>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[32rem] text-sm">
+          <thead>
+            <tr className="text-left text-slate-500">
+              <th className="py-1">ID</th>
+              <th>Сформирован</th>
+              <th>Период</th>
+              <th>Действие</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {snapshots.map((s) => (
+              <tr key={s.id} className="border-t border-slate-100">
+                <td className="py-1 font-mono text-xs">{s.id}</td>
+                <td>{new Date(s.generatedAt).toLocaleString('ru-RU')}</td>
+                <td>
+                  {s.dateFrom} — {s.dateTo}
+                </td>
+                <td>
+                  <Link
+                    to={`/report?snapshot=${s.id}`}
+                    className="rounded bg-indigo-600 px-3 py-1 text-xs text-white hover:bg-indigo-700"
+                  >
+                    Просмотреть
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <p className="text-xs text-slate-500">Всего отчётов: {formatInt(snapshots.length)}</p>
     </section>
   );
