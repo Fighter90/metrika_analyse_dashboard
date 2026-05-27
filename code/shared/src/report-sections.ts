@@ -343,7 +343,7 @@ export function reportSections(s: ReportSnapshot): ReportSection[] {
     {
       heading: 'Краткие итоги',
       lines: [
-        `Заявки B2C (достижения цели за период): ${s.kpi.b2cApplications}`,
+        `${s.goalLabel?.title ?? 'Заявок B2C'} (достижения основной цели за период): ${s.kpi.b2cApplications}`,
         `Оплачено B2B (билетов): ${s.kpi.b2bPaidTickets}`,
         `Gap до цели (по оплатам): ${s.kpi.gap}`,
         `Суммарно визитов в выборке каналов: ${totalVisits}`,
