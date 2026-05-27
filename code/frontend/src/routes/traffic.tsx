@@ -14,6 +14,7 @@ import {
 import { utmSankeyOption } from '../lib/sankey';
 import { combineStatus, type QueryStatus } from '../lib/query-status';
 import { EChart } from '../components/charts/EChart';
+import { Tooltip } from '../components/Tooltip';
 import { ChartCaption } from '../components/charts/ChartCaption';
 import { EmptyState } from '../components/EmptyState';
 import { filterBySegment, filterUtmBySegment } from '../lib/segment-filter';
@@ -222,7 +223,11 @@ export function TrafficView({
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-lg font-semibold">UTM-разбивка</h2>
+        <h2 className="text-lg font-semibold">
+          <Tooltip text="UTM-покрытие = визиты с UTM-метками / все визиты за период. Чем выше, тем точнее атрибуция источников.">
+            UTM-разбивка
+          </Tooltip>
+        </h2>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[40rem] text-sm">
             <thead>
