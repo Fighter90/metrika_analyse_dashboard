@@ -38,7 +38,7 @@ export function B2bView({
 
   return (
     <section className="space-y-6">
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {summary.byStage.map((s) => (
           <div key={s.stage} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
             <div className="text-xs uppercase text-slate-500">{s.stage}</div>

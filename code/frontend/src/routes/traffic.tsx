@@ -223,33 +223,35 @@ export function TrafficView({
 
       <div className="space-y-2">
         <h2 className="text-lg font-semibold">UTM-разбивка</h2>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-slate-500">
-              <th className="py-1">Source</th>
-              <th>Medium</th>
-              <th>Campaign</th>
-              <th>Визиты</th>
-              <th>Заявки</th>
-              <th>CR</th>
-            </tr>
-          </thead>
-          <tbody>
-            {utmTable.map((u) => (
-              <tr
-                key={`${u.source} ${u.medium} ${u.campaign}`}
-                className="border-t border-slate-100"
-              >
-                <td className="py-1">{u.source}</td>
-                <td>{u.medium}</td>
-                <td>{u.campaign}</td>
-                <td>{formatInt(u.visits)}</td>
-                <td>{formatInt(u.goalReaches)}</td>
-                <td>{formatPercent(u.conversionRate)}</td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[40rem] text-sm">
+            <thead>
+              <tr className="text-left text-slate-500">
+                <th className="py-1">Source</th>
+                <th>Medium</th>
+                <th>Campaign</th>
+                <th>Визиты</th>
+                <th>Заявки</th>
+                <th>CR</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {utmTable.map((u) => (
+                <tr
+                  key={`${u.source} ${u.medium} ${u.campaign}`}
+                  className="border-t border-slate-100"
+                >
+                  <td className="py-1">{u.source}</td>
+                  <td>{u.medium}</td>
+                  <td>{u.campaign}</td>
+                  <td>{formatInt(u.visits)}</td>
+                  <td>{formatInt(u.goalReaches)}</td>
+                  <td>{formatPercent(u.conversionRate)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {utmInsights.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{utmInsights}</div>}
       </div>
     </section>

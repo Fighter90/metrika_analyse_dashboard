@@ -206,7 +206,7 @@ export function ReportPreviewView({
           </p>
 
           {/* KPI strip */}
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             <Stat label="Цель" value={formatInt(snapshot.kpi.target)} />
             <Stat
               label="Заявки B2C"
@@ -219,7 +219,7 @@ export function ReportPreviewView({
 
           {/* Funnel summary */}
           {snapshot.funnel && (
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <Stat label="Визиты" value={formatInt(snapshot.funnel.visits)} />
               <Stat
                 label="Воронка → Заявки"
