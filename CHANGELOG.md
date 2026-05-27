@@ -61,7 +61,7 @@
 ### Fixed
 
 - **COUNTER_ID**: стабилен 54280963; useRef tracking — не перезаписывается при сохранении настроек
-- **Settings**: маскированные секреты (****) не отправляются обратно на сервер
+- **Settings**: маскированные секреты (\*\*\*\*) не отправляются обратно на сервер
 - **FilterBar**: скрыт на /help и /settings (где фильтры не нужны)
 - **README**: убраны badge'и CI/E2E/Security, документация обновлена на двух языках (v2.1.0)
 - **PDF renderer**: puppeteer-core auto-detect Chrome executable path
