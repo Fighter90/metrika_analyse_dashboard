@@ -6,6 +6,7 @@ import { useFilters } from '../store/filters';
 import { formatInt, formatPercent } from '../lib/format';
 import { combineStatus, type QueryStatus } from '../lib/query-status';
 import { EChart } from '../components/charts/EChart';
+import { ChartCaption } from '../components/charts/ChartCaption';
 import { EmptyState } from '../components/EmptyState';
 import { channelRows } from '../lib/traffic';
 import { funnelByChannelOption } from '../lib/funnel-by-channel';
@@ -274,6 +275,11 @@ export function FunnelView({
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <h3 className="mb-2 text-lg font-semibold">Воронка конверсии</h3>
         <EChart option={funnelChartOption(visits, reaches, b2bTickets, b2bPaid)} />
+        <ChartCaption
+          correct="Ступени визит→заявка строятся из channel_stats; ступени билетов/оплат — из b2b_manual."
+          caveat="Если B2B-данные не введены вручную, нижние ступени воронки занижены и не отражают реальные оплаты."
+          advice="Заполняйте b2b_manual после каждой сделки, чтобы воронка показывала путь до оплаты, а не только до заявки."
+        />
       </div>
 
       {/* Loss analysis */}
@@ -287,16 +293,22 @@ export function FunnelView({
       {/* Channel conversion chart */}
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <EChart option={channelCrOption(stats)} />
+        <ChartCaption
+          correct="CR = заявки / визиты по каждому каналу, значение ограничено диапазоном [0; 100%]."
+          caveat="При малом числе визитов CR статистически шумный — один-два события сильно меняют процент."
+          advice="Принимайте решения по CR каналов с ≥30 визитами; остальные считайте ориентировочными."
+        />
       </div>
 
       {/* Funnel by channel: visits vs applications */}
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <h3 className="mb-2 text-lg font-semibold">Воронка по каналам: визиты vs заявки</h3>
         <EChart option={funnelByChannelOption(stats)} />
-        <p className="mt-2 text-xs text-slate-500">
-          Топ-каналы по визитам: рядом стоят столбцы визитов и заявок — видно, какой канал доводит
-          посетителя до заявки, а какой даёт трафик «вхолостую».
-        </p>
+        <ChartCaption
+          correct="Рядом стоят столбцы визитов и заявок по топ-каналам — видно, кто доводит до заявки, а кто даёт трафик «вхолостую»."
+          caveat="Показаны только топ-каналы по визитам; «длинный хвост» мелких источников в график не попадает."
+          advice="Канал с большим разрывом «визиты ≫ заявки» — кандидат на гипотезу о качестве трафика."
+        />
       </div>
 
       {/* Geo breakdown */}
@@ -304,6 +316,11 @@ export function FunnelView({
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <h3 className="mb-2 text-lg font-semibold">Конверсия по странам</h3>
           <EChart option={audienceBarOption(geoRows, 'Заявки по странам')} />
+          <ChartCaption
+            correct="Заявки в разбивке по странам из geo_device_stats — отражает реальную географию аудитории."
+            caveat="Метрика определяет страну по IP; VPN и мобильные операторы могут искажать гео."
+            advice="Используйте для языка и таргетинга кампаний, но не как единственный признак сегмента."
+          />
         </div>
       )}
 

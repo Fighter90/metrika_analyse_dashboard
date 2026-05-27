@@ -14,6 +14,7 @@ import {
 import { utmSankeyOption } from '../lib/sankey';
 import { combineStatus, type QueryStatus } from '../lib/query-status';
 import { EChart } from '../components/charts/EChart';
+import { ChartCaption } from '../components/charts/ChartCaption';
 import { EmptyState } from '../components/EmptyState';
 import { filterBySegment, filterUtmBySegment } from '../lib/segment-filter';
 import { buildHypothesisUrl } from '../lib/hypothesis-prefill';
@@ -165,6 +166,11 @@ export function TrafficView({
         {channelInsights.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">{channelInsights}</div>
         )}
+        <ChartCaption
+          correct="Визиты по каналам берутся из channel_stats и прослеживаются до raw_responses (Метрика)."
+          caveat="Показаны только визиты — высокий трафик не равен продажам (заявка ≠ оплата)."
+          advice="Сверяйте с графиком «визиты vs заявки» ниже; масштабируйте каналы с высоким CR, а не с высоким трафиком."
+        />
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
@@ -172,15 +178,21 @@ export function TrafficView({
           Каналы — визиты vs заявки (какой трафик конвертит)
         </h2>
         <EChart option={channelVisitsVsReachesOption(rows)} />
+        <ChartCaption
+          correct="Две серии (визиты и достижения цели) на одной оси — видно реальную конверсию каждого канала."
+          caveat="Достижения цели — это заявки, а не оплаченные билеты; оплаты по B2B вносятся вручную."
+          advice="Фокусируйтесь на каналах, где заявки растут быстрее визитов — это потенциал роста оплат."
+        />
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <h2 className="mb-2 text-lg font-semibold">Поток: источник → кампания → заявки</h2>
         <EChart option={utmSankeyOption(utm)} />
-        <p className="mt-2 text-xs text-slate-500">
-          Толщина связей: источник→кампания — по визитам, кампания→«Заявки» — по достижениям целей.
-          Видно, какие UTM-источники и кампании реально доводят трафик до заявок.
-        </p>
+        <ChartCaption
+          correct="Толщина связей: источник→кампания — по визитам, кампания→«Заявки» — по достижениям целей (из utm_stats)."
+          caveat="Трафик без UTM-меток («(none)») не атрибутируется и выпадает из потока."
+          advice="Размечайте все кампании UTM-метками, чтобы покрытие было ≥70% и поток отражал реальную атрибуцию."
+        />
       </div>
 
       <div className="space-y-2">

@@ -6,6 +6,7 @@ import { formatInt, formatPercent } from '../lib/format';
 import { dailySeries, weekOverWeek, trendsOption } from '../lib/trends';
 import { visitsHeatmapOption } from '../lib/heatmap';
 import { EChart } from '../components/charts/EChart';
+import { ChartCaption } from '../components/charts/ChartCaption';
 import { EmptyState } from '../components/EmptyState';
 import type { QueryStatus } from '../lib/query-status';
 
@@ -59,15 +60,20 @@ export function TrendsView({
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <h2 className="mb-2 text-lg font-semibold">Динамика по дням</h2>
         <EChart option={trendsOption(series)} />
+        <ChartCaption
+          correct="Визиты и заявки по дням из channel_stats; WoW-сравнение считается по последним 7 дням."
+          caveat="Неполный последний день периода занижает хвост графика — данные Метрики догружаются с лагом."
+          advice="Для WoW-выводов берите завершённые недели; одиночные дневные пики проверяйте на разметку кампаний."
+        />
       </div>
       <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <h2 className="mb-2 text-lg font-semibold">Тепловая карта визитов (канал × дата)</h2>
         <EChart option={visitsHeatmapOption(stats)} />
-        <p className="mt-2 text-xs text-slate-500">
-          Цвет ячейки — число визитов канала в этот день (когортный retention недоступен: Метрика
-          отдаёт только дневные агрегаты без возвратов по пользователям/сессиям). Видно всплески и
-          провалы трафика по каналам во времени.
-        </p>
+        <ChartCaption
+          correct="Цвет ячейки — число визитов канала в этот день (канал × дата) из channel_stats."
+          caveat="Это не когортный retention: Метрика отдаёт дневные агрегаты без возвратов по пользователям/сессиям."
+          advice="Используйте для поиска всплесков и провалов трафика по каналам; для retention нужен Logs API (вне scope)."
+        />
       </div>
     </section>
   );
