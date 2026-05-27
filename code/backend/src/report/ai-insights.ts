@@ -274,7 +274,7 @@ export function buildInsightsRequest(snapshot: ReportSnapshot, model: string): A
     '5) Слабые места сайта (высокий bounce, низкий CR).\n' +
     'Опирайся только на числа выше. Выводи полный текст — не обрезай.';
 
-  return { model, max_tokens: 4000, system, messages: [{ role: 'user', content: user }] };
+  return { model, max_tokens: 6000, system, messages: [{ role: 'user', content: user }] };
 }
 
 const ResponseSchema = z.object({
