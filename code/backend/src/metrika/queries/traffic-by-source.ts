@@ -39,29 +39,50 @@ function mapRow(row: Row, opts: TrafficQueryOptions): ChannelStat {
  * primary key and INSERT OR REPLACE keeps just the last one — silently dropping the others' visits.
  * Visits/users/reaches are summed; bounce + duration are visit-weighted; CR is recomputed.
  */
+interface ChannelAcc {
+  date: string;
+  channel: string;
+  visits: number;
+  users: number;
+  goalReaches: number;
+  wBounce: number;
+  wDur: number;
+}
+
 export function aggregateByChannel(stats: ChannelStat[]): ChannelStat[] {
-  const acc = new Map<string, { stat: ChannelStat; wBounce: number; wDur: number }>();
+  const acc = new Map<string, ChannelAcc>();
   for (const s of stats) {
     const cur = acc.get(s.channel);
     if (!cur) {
       acc.set(s.channel, {
-        stat: { ...s },
+        date: s.date,
+        channel: s.channel,
+        visits: s.visits,
+        users: s.users,
+        goalReaches: s.goalReaches,
         wBounce: s.bounceRate * s.visits,
         wDur: s.avgDuration * s.visits,
       });
     } else {
-      cur.stat.visits += s.visits;
-      cur.stat.users += s.users;
-      cur.stat.goalReaches += s.goalReaches;
+      cur.visits += s.visits;
+      cur.users += s.users;
+      cur.goalReaches += s.goalReaches;
       cur.wBounce += s.bounceRate * s.visits;
       cur.wDur += s.avgDuration * s.visits;
     }
   }
-  return [...acc.values()].map(({ stat, wBounce, wDur }) => ({
-    ...stat,
-    bounceRate: stat.visits > 0 ? wBounce / stat.visits : 0,
-    avgDuration: stat.visits > 0 ? wDur / stat.visits : 0,
-    conversionRate: stat.visits > 0 ? stat.goalReaches / stat.visits : 0,
+  return [...acc.values()].map((c) => ({
+    date: c.date,
+    channel: c.channel,
+    utmSource: null,
+    utmMedium: null,
+    utmCampaign: null,
+    visits: c.visits,
+    users: c.users,
+    bounceRate: c.visits > 0 ? c.wBounce / c.visits : 0,
+    avgDuration: c.visits > 0 ? c.wDur / c.visits : 0,
+    goalReaches: c.goalReaches,
+    conversionRate: c.visits > 0 ? c.goalReaches / c.visits : 0,
   }));
 }
 
