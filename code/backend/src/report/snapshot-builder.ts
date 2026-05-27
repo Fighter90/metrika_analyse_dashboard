@@ -1,4 +1,9 @@
-import { KPI_TARGET_PAID_TICKETS, type ReportSnapshot } from '@pca/shared';
+import {
+  KPI_TARGET_PAID_TICKETS,
+  selectPrimaryGoal,
+  formatGoalLabel,
+  type ReportSnapshot,
+} from '@pca/shared';
 import type { MetricsRepo } from '../db/repositories/metrics-repo';
 import type { HypothesesRepo } from '../db/repositories/hypotheses-repo';
 import type { DecisionsRepo } from '../db/repositories/decisions-repo';
@@ -79,6 +84,9 @@ export class SnapshotBuilder {
       .filter((d) => d.stage !== 'paid')
       .reduce((a, d) => a + d.tickets, 0);
 
+    // Label for the primary goal's reaches — «Оплат» for a purchase goal, else «Заявок B2C».
+    const goalLabel = formatGoalLabel(selectPrimaryGoal(this.deps.metrics.listGoals(true)));
+
     return {
       id: opts.id,
       generatedAt: opts.generatedAt,
@@ -108,6 +116,7 @@ export class SnapshotBuilder {
         entryPages: topPages(pageStats),
         exitPages: topPages(exitPageStats),
       },
+      goalLabel,
     };
   }
 }

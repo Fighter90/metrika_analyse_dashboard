@@ -3,6 +3,7 @@ import type { Hypothesis } from './hypotheses';
 import type { Decision } from './decisions';
 import type { GeneratedHypotheses } from './generated-hypotheses';
 import type { GeneratedDecisions } from './generated-decisions';
+import type { GoalLabel } from '../format-goal';
 
 /** Aggregated top-N breakdown rows for the report appendix (summed across the period). */
 export interface UtmBreakdownRow {
@@ -104,4 +105,9 @@ export interface ReportSnapshot {
    * Absent until generated via POST /report/hypotheses (which also produces decisions).
    */
   readonly generatedDecisions?: GeneratedDecisions;
+  /**
+   * Label for the primary goal's reaches (formatGoalLabel): «Оплат» for purchase goals, else
+   * «Заявок B2C». Lets the report/DOCX/PDF headline match the dashboard. Absent → treat as applications.
+   */
+  readonly goalLabel?: GoalLabel;
 }

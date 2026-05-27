@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { B2bDeal, ChannelStat } from '@pca/shared';
-import { periodTotals } from '@pca/shared';
+import type { B2bDeal, ChannelStat, GoalLabel } from '@pca/shared';
+import { periodTotals, formatGoalLabel } from '@pca/shared';
 import { api } from '../lib/api';
 import { useFilters } from '../store/filters';
 import { formatInt, formatPercent } from '../lib/format';
@@ -165,6 +165,7 @@ export function GoalsView({
   totalVisits,
   overallCR,
   deals,
+  goalLabel,
 }: {
   status: QueryStatus;
   target: number;
@@ -174,6 +175,7 @@ export function GoalsView({
   totalVisits: number;
   overallCR: number;
   deals: B2bDeal[];
+  goalLabel?: GoalLabel;
 }): JSX.Element {
   if (status === 'pending') return <p className="text-slate-500">Загрузка…</p>;
   if (status === 'error')
@@ -208,10 +210,13 @@ export function GoalsView({
                 билетов
               </p>
               <div className="rounded bg-slate-50 px-3 py-2">
-                <p className="font-medium">B2C заявки (Метрика): {formatInt(b2cApplications)}</p>
+                <p className="font-medium">
+                  {goalLabel?.title ?? 'Заявок B2C'} (Метрика): {formatInt(b2cApplications)}
+                </p>
                 <p className="text-xs text-slate-500">
-                  Верхняя оценка потенциала. Это заявки, не оплаты (заявка ≠ оплата); прогресс к
-                  цели считается только по подтверждённым оплатам.
+                  {goalLabel?.showApplicationsCaveat === false
+                    ? 'Достижения цели-покупки из Метрики (это оплаты).'
+                    : 'Верхняя оценка потенциала. Это заявки, не оплаты (заявка ≠ оплата); прогресс к цели считается только по подтверждённым оплатам.'}
                 </p>
               </div>
               <div className="rounded bg-slate-50 px-3 py-2">
@@ -409,6 +414,7 @@ export function Goals(): JSX.Element {
     queryKey: ['b2b'],
     queryFn: () => api.b2b(),
   });
+  const goalQ = useQuery({ queryKey: ['primary-goal'], queryFn: api.primaryGoal, retry: false });
 
   const status: QueryStatus =
     channelsQ.status === 'pending' || b2bQ.status === 'pending'
@@ -435,6 +441,7 @@ export function Goals(): JSX.Element {
       totalVisits={totals.visits}
       overallCR={totals.conversionRate}
       deals={deals}
+      goalLabel={formatGoalLabel(goalQ.data)}
     />
   );
 }
