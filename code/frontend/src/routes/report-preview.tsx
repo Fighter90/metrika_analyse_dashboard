@@ -68,7 +68,7 @@ function AINarrativeView({ narrative }: { narrative: string }): JSX.Element {
         AI-анализ (интерпретация поверх точных цифр — проверяйте по данным):
       </p>
       <div
-        className="ai-narrative max-h-[60vh] overflow-auto rounded bg-slate-50 p-4 text-sm text-slate-700"
+        className="ai-narrative overflow-auto rounded bg-slate-50 p-4 text-sm text-slate-700"
         dangerouslySetInnerHTML={{ __html: mdToHtml(narrative) }}
       />
     </div>
