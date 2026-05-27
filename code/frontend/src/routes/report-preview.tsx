@@ -347,14 +347,19 @@ export function ReportPreview(): JSX.Element {
 
   const snapshot = existingSnapshot.data ?? buildMut.data;
 
+  // When viewing from History, use the saved AI narrative if present
+  const savedNarrative = snapshot?.aiNarrative;
+  const narrative = insightsMut.data?.narrative ?? savedNarrative;
+  const insightsPending = insightsMut.isPending;
+
   return (
     <ReportPreviewView
       snapshot={snapshot}
       isPending={buildMut.isPending}
       onBuild={() => buildMut.mutate({ from, to })}
       onExport={(snapshotId, format) => downloadFile(reportDownloadUrl(snapshotId, format))}
-      insightsPending={insightsMut.isPending}
-      narrative={insightsMut.data?.narrative}
+      insightsPending={insightsPending}
+      narrative={narrative}
       insightsError={errorMessage(insightsMut.error)}
       onInsights={(snapshotId) => insightsMut.mutate(snapshotId)}
     />
