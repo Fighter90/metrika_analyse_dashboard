@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import type { ChannelStat, GeoDeviceStat, UtmStat, PageStat } from '@pca/shared';
+import type { ChannelStat, GeoDeviceStat, UtmStat, PageStat, B2bDeal } from '@pca/shared';
 import { api } from '../lib/api';
 import { useFilters } from '../store/filters';
 import { formatInt, formatPercent } from '../lib/format';
@@ -43,9 +43,9 @@ function InsightBadge({
 /** Compute insights from channel data */
 function computeChannelInsights(stats: ChannelStat[]): JSX.Element[] {
   const insights: JSX.Element[] = [];
-  const kpi = summarizeChannels(stats);
   const totalVisits = stats.reduce((a, c) => a + c.visits, 0);
-  const overallCR = totalVisits > 0 ? kpi.reaches / totalVisits : 0;
+  const totalApplications = stats.reduce((a, c) => a + c.goalReaches, 0);
+  const overallCR = totalVisits > 0 ? totalApplications / totalVisits : 0;
 
   // Overall conversion assessment
   if (overallCR > 0.05) {
@@ -193,6 +193,7 @@ function computeGeoInsights(geoDevice: GeoDeviceStat[] | undefined): JSX.Element
 export function OverviewView({
   status,
   stats,
+  b2bDeals,
   primaryGoalName,
   geoDevice,
   utm,
@@ -201,6 +202,7 @@ export function OverviewView({
 }: {
   status: QueryStatus;
   stats: ChannelStat[];
+  b2bDeals?: B2bDeal[];
   primaryGoalName?: string;
   geoDevice?: GeoDeviceStat[];
   utm?: UtmStat[];
@@ -217,7 +219,7 @@ export function OverviewView({
 
   if (stats.length === 0) return <EmptyState />;
 
-  const kpi = summarizeChannels(stats);
+  const kpi = summarizeChannels(stats, b2bDeals ?? []);
   const weak = weakSpots(stats);
   const geoRows = geoDevice ? byCountry(geoDevice) : [];
   const devRows = geoDevice ? byDevice(geoDevice) : [];
@@ -255,10 +257,11 @@ export function OverviewView({
         </div>
       ) : null}
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <Kpi label="Цель (платных билетов)" value={formatInt(kpi.target)} />
-        <Kpi label="Заявок (goal reaches)" value={formatInt(kpi.reaches)} hint="заявка ≠ оплата" />
-        <Kpi label="Gap до цели" value={formatInt(kpi.gap)} />
+        <Kpi label="Заявок B2C" value={formatInt(kpi.applications)} hint="заявка ≠ оплата" />
+        <Kpi label="Оплачено B2B" value={formatInt(kpi.b2bPaid)} />
+        <Kpi label="Gap до цели" value={formatInt(kpi.gap)} hint={`${formatInt(kpi.b2bPaid)} оплачено из ${formatInt(kpi.target)}`} />
       </div>
 
       <Card title="Визиты и заявки по дням">
@@ -426,6 +429,10 @@ export function Overview(): JSX.Element {
     queryKey: ['exit-pages', from, to],
     queryFn: () => api.exitPages({ from, to }),
   });
+  const b2bDeals = useQuery({
+    queryKey: ['b2b'],
+    queryFn: () => api.b2b(),
+  });
 
   // Apply segment filter
   const allChannels = q.data ?? [];
@@ -436,6 +443,7 @@ export function Overview(): JSX.Element {
     <OverviewView
       status={q.status}
       stats={filteredChannels}
+      b2bDeals={b2bDeals.data}
       primaryGoalName={goal.data?.name}
       geoDevice={geoDevice.data}
       utm={filteredUtm}

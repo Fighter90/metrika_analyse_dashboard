@@ -1,17 +1,28 @@
-import type { ChannelStat } from '@pca/shared';
+import type { ChannelStat, B2bDeal } from '@pca/shared';
 import { KPI_TARGET_PAID_TICKETS } from '@pca/shared';
 import { intTooltip } from './echart-format';
 
 export interface OverviewKpi {
   readonly target: number;
-  readonly reaches: number;
+  readonly applications: number;
+  readonly b2bPaid: number;
   readonly gap: number;
 }
 
-/** KPI strip: total goal reaches (заявки) vs the 300 target. */
-export function summarizeChannels(stats: ChannelStat[]): OverviewKpi {
-  const reaches = stats.reduce((acc, s) => acc + s.goalReaches, 0);
-  return { target: KPI_TARGET_PAID_TICKETS, reaches, gap: KPI_TARGET_PAID_TICKETS - reaches };
+/** KPI strip: target, B2C applications, B2B paid, gap.
+ * Gap = target - b2bPaid (заявка ≠ оплата — gap считается только по оплаченным билетам).
+ * applications показывается отдельно как «верхняя оценка» потенциала. */
+export function summarizeChannels(stats: ChannelStat[], deals: B2bDeal[] = []): OverviewKpi {
+  const applications = stats.reduce((acc, s) => acc + s.goalReaches, 0);
+  const b2bPaid = deals
+    .filter((d) => d.stage === 'paid')
+    .reduce((acc, d) => acc + d.tickets, 0);
+  return {
+    target: KPI_TARGET_PAID_TICKETS,
+    applications,
+    b2bPaid,
+    gap: KPI_TARGET_PAID_TICKETS - b2bPaid,
+  };
 }
 
 export interface WeakSpot {

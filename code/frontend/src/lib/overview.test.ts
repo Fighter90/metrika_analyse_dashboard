@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { ChannelStat } from '@pca/shared';
+import type { ChannelStat, B2bDeal } from '@pca/shared';
 import { summarizeChannels, channelMixOption, dailyReachesOption, weakSpots } from './overview';
 
 function stat(over: Partial<ChannelStat>): ChannelStat {
@@ -20,9 +20,19 @@ function stat(over: Partial<ChannelStat>): ChannelStat {
 }
 
 describe('summarizeChannels', () => {
-  it('sums goal reaches against the 300 target', () => {
-    const kpi = summarizeChannels([stat({ goalReaches: 5 }), stat({ goalReaches: 3 })]);
-    expect(kpi).toEqual({ target: 300, reaches: 8, gap: 292 });
+  it('sums goal reaches and calculates gap from B2B paid (not applications)', () => {
+    const deals: B2bDeal[] = [
+      { id: 1, company: 'A', tickets: 10, stage: 'paid', dateAdded: '2025-01-01' },
+      { id: 2, company: 'B', tickets: 5, stage: 'lead', dateAdded: '2025-01-01' },
+    ];
+    const kpi = summarizeChannels([stat({ goalReaches: 5 }), stat({ goalReaches: 3 })], deals);
+    // gap = 300 - 10 (only paid B2B tickets count)
+    expect(kpi).toEqual({ target: 300, applications: 8, b2bPaid: 10, gap: 290 });
+  });
+
+  it('defaults gap to 300 when no B2B deals exist', () => {
+    const kpi = summarizeChannels([stat({ goalReaches: 5 })], []);
+    expect(kpi).toEqual({ target: 300, applications: 5, b2bPaid: 0, gap: 300 });
   });
 });
 
