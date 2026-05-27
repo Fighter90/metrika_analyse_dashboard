@@ -205,7 +205,12 @@ function PageTable({
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-semibold">{title}</h2>
-      <div className="overflow-x-auto rounded-lg border border-slate-200">
+      <div
+        className="overflow-x-auto rounded-lg border border-slate-200"
+        tabIndex={0}
+        role="region"
+        aria-label={title}
+      >
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-slate-50 text-left text-slate-500">
@@ -221,15 +226,15 @@ function PageTable({
             {rows.map((r) => {
               const bounceColor =
                 r.bounceRate > 0.5
-                  ? 'text-red-600'
+                  ? 'text-red-700'
                   : r.bounceRate > 0.3
-                    ? 'text-amber-600'
-                    : 'text-green-600';
+                    ? 'text-amber-700'
+                    : 'text-green-700';
               const crColor =
                 r.conversionRate > avgCR * 1.5
-                  ? 'text-green-600'
+                  ? 'text-green-700'
                   : r.conversionRate < avgCR * 0.5
-                    ? 'text-red-600'
+                    ? 'text-red-700'
                     : 'text-slate-600';
               return (
                 <tr key={r.page} className="border-t border-slate-100 hover:bg-slate-50">
@@ -274,7 +279,7 @@ export function BehaviorView({
   if (status === 'pending') return <p className="text-slate-500">Загрузка…</p>;
   if (status === 'error')
     return (
-      <p role="alert" className="text-red-600">
+      <p role="alert" className="text-red-700">
         Не удалось загрузить поведение.
       </p>
     );
@@ -313,28 +318,28 @@ export function BehaviorView({
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="text-xs text-slate-500">Страниц входа</div>
           <div className="text-2xl font-bold">{entryRows.length}</div>
-          {entrySummary && <div className="mt-1 text-xs text-slate-400">{entrySummary}</div>}
+          {entrySummary && <div className="mt-1 text-xs text-slate-500">{entrySummary}</div>}
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="text-xs text-slate-500">Визитов</div>
           <div className="text-2xl font-bold">{formatInt(totalEntryVisits)}</div>
-          <div className="mt-1 text-xs text-slate-400">CR {formatPercent(entryCR)}</div>
+          <div className="mt-1 text-xs text-slate-500">CR {formatPercent(entryCR)}</div>
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="text-xs text-slate-500">Средний bounce</div>
           <div
-            className={`text-2xl font-bold ${avgEntryBounce > 0.3 ? 'text-red-600' : avgEntryBounce > 0.2 ? 'text-amber-600' : 'text-green-600'}`}
+            className={`text-2xl font-bold ${avgEntryBounce > 0.3 ? 'text-red-700' : avgEntryBounce > 0.2 ? 'text-amber-700' : 'text-green-700'}`}
           >
             {formatPercent(avgEntryBounce)}
           </div>
-          <div className="mt-1 text-xs text-slate-400">
+          <div className="mt-1 text-xs text-slate-500">
             {avgEntryBounce > 0.3 ? '⚠️ Высокий' : '✅ В норме'}
           </div>
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="text-xs text-slate-500">Страниц выхода</div>
           <div className="text-2xl font-bold">{exitRows.length}</div>
-          {exitSummary && <div className="mt-1 text-xs text-slate-400">{exitSummary}</div>}
+          {exitSummary && <div className="mt-1 text-xs text-slate-500">{exitSummary}</div>}
         </div>
       </div>
 

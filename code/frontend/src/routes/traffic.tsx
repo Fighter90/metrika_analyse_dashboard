@@ -140,7 +140,7 @@ export function TrafficView({
   if (status === 'pending') return <p className="text-slate-500">Загрузка…</p>;
   if (status === 'error')
     return (
-      <p role="alert" className="text-red-600">
+      <p role="alert" className="text-red-700">
         Не удалось загрузить трафик.
       </p>
     );

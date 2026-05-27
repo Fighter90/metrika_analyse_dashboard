@@ -184,7 +184,7 @@ export function FunnelView({
   if (status === 'pending') return <p className="text-slate-500">Загрузка…</p>;
   if (status === 'error')
     return (
-      <p role="alert" className="text-red-600">
+      <p role="alert" className="text-red-700">
         Не удалось загрузить данные. Запустите sync и проверьте backend.
       </p>
     );
@@ -226,17 +226,17 @@ export function FunnelView({
         <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
           <div className="text-xs text-slate-500">Заявок B2C</div>
           <div className="text-xl font-bold">{formatInt(reaches)}</div>
-          <div className="text-xs text-slate-400">CR {formatPercent(appConversionRate)}</div>
+          <div className="text-xs text-slate-500">CR {formatPercent(appConversionRate)}</div>
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
           <div className="text-xs text-slate-500">B2B pipeline</div>
           <div className="text-xl font-bold">{formatInt(b2bTickets)}</div>
-          <div className="text-xs text-slate-400">{b2bDealsCount} сделок</div>
+          <div className="text-xs text-slate-500">{b2bDealsCount} сделок</div>
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
           <div className="text-xs text-slate-500">Оплачено B2B</div>
           <div className="text-xl font-bold">{formatInt(b2bPaid)}</div>
-          <div className="text-xs text-slate-400">CR {formatPercent(paymentConversionRate)}</div>
+          <div className="text-xs text-slate-500">CR {formatPercent(paymentConversionRate)}</div>
         </div>
       </div>
 
@@ -342,7 +342,7 @@ export function FunnelView({
                   <div className="text-lg font-bold">
                     {data ? `${formatInt(data.tickets)} билетов` : '0'}
                   </div>
-                  <div className="text-xs text-slate-400">
+                  <div className="text-xs text-slate-500">
                     {data ? `${data.count} сделок` : '0 сделок'}
                   </div>
                 </div>
@@ -358,7 +358,7 @@ export function FunnelView({
         <div className="space-y-2 text-sm text-slate-600">
           {highBouncePages.length > 0 ? (
             <div>
-              <p className="font-medium text-red-600">Высокий bounce rate (&gt; 40%):</p>
+              <p className="font-medium text-red-700">Высокий bounce rate (&gt; 40%):</p>
               <ul className="mt-1 list-inside list-disc">
                 {highBouncePages.slice(0, 5).map((p) => (
                   <li key={p.page}>
@@ -368,11 +368,11 @@ export function FunnelView({
               </ul>
             </div>
           ) : (
-            <p className="text-green-600">✅ Нет страниц с критическим bounce rate.</p>
+            <p className="text-green-700">✅ Нет страниц с критическим bounce rate.</p>
           )}
           {lowCrPages.length > 0 && (
             <div>
-              <p className="mt-2 font-medium text-amber-600">Низкий CR (&lt; 0.5%):</p>
+              <p className="mt-2 font-medium text-amber-700">Низкий CR (&lt; 0.5%):</p>
               <ul className="mt-1 list-inside list-disc">
                 {lowCrPages.slice(0, 5).map((p) => (
                   <li key={p.page}>
