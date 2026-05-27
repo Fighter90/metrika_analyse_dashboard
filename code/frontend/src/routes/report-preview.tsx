@@ -144,8 +144,8 @@ export function ReportPreviewView({
 
     let step = 0;
     const totalSteps = AI_STAGES.length;
-    // Each step takes ~3-5 seconds (total 15-25 seconds for 5 chunks)
-    const stepDuration = 3000;
+    // Each step takes ~60 seconds (total ~5-10 minutes for 5 chunks with 6000 tokens)
+    const stepDuration = 60000;
 
     intervalRef.current = setInterval(() => {
       step++;
@@ -297,7 +297,7 @@ export function ReportPreviewView({
               <div className="space-y-2">
                 <AIProgress progress={aiProgress} stage={aiStage} />
                 <p className="text-xs text-violet-500">
-                  Генерация AI-анализа: 5 разделов, обычно занимает 30–60 секунд.
+                  Генерация AI-анализа: 5 разделов (по 6000 токенов), обычно занимает 5–10 минут.
                 </p>
               </div>
             ) : (
