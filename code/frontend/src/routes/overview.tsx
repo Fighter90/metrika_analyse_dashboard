@@ -16,6 +16,7 @@ import { filterBySegment, filterUtmBySegment } from '../lib/segment-filter';
 import { buildHypothesisUrl } from '../lib/hypothesis-prefill';
 import { shouldShowOnboarding, markOnboarded } from '../lib/onboarding';
 import { weeklyDigest } from '../lib/weekly-digest';
+import { Tooltip } from '../components/Tooltip';
 import { formatGoalLabel, type GoalLabel } from '@pca/shared';
 
 export type QueryStatus = 'pending' | 'error' | 'success';
@@ -580,7 +581,11 @@ function WeeklyDigest({ stats }: { stats: ChannelStat[] }): JSX.Element | null {
           ) : null}
         </div>
         <div>
-          <p className="text-xs text-slate-500">Главное слабое место</p>
+          <p className="text-xs text-slate-500">
+            <Tooltip text="Канал с заметным трафиком, но конверсией ниже средней — наибольший потенциал роста оплат.">
+              Главное слабое место
+            </Tooltip>
+          </p>
           {d.topWeakSpot ? (
             <>
               <p className="text-base font-semibold text-red-700">{d.topWeakSpot.channel}</p>

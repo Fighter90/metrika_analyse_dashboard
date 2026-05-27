@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* WCAG: a visible focus ring on every keyboard-focusable control (§7.5). */
+@layer base {
+  *:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
 /* AI analysis narrative rendering */
 .ai-narrative h2 {
   font-size: 1.5rem;
