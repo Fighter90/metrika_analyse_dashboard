@@ -52,6 +52,40 @@ describe('trafficBySource', () => {
     expect(stats[0]?.conversionRate).toBe(0.05);
   });
 
+  it('aggregates sibling rows of the same channel (source split across engines) into one', async () => {
+    // "Search engine traffic" arrives twice (Google + Yandex); both must be summed, not collapsed.
+    const client = fakeClient({
+      data: [
+        {
+          dimensions: [{ name: 'Search engine traffic' }, { name: 'Google' }],
+          metrics: [46, 40, 0.5, 60, 4, 0.087],
+        },
+        {
+          dimensions: [{ name: 'Search engine traffic' }, { name: 'Yandex' }],
+          metrics: [24, 20, 0.25, 100, 1, 0.042],
+        },
+        {
+          dimensions: [{ name: 'Direct traffic' }, { name: null }],
+          metrics: [359, 300, 0.3, 80, 2, 0.0056],
+        },
+      ],
+    });
+    const { stats } = await trafficBySource(client, {
+      counterId: 1,
+      from: '2025-01-04',
+      to: '2025-01-04',
+      goalId: 80,
+    });
+    expect(stats).toHaveLength(2); // two channels, not three rows
+    const search = stats.find((s) => s.channel === 'Search engine traffic');
+    expect(search?.visits).toBe(70); // 46 + 24 — was previously collapsed to 24
+    expect(search?.users).toBe(60);
+    expect(search?.goalReaches).toBe(5); // 4 + 1
+    expect(search?.conversionRate).toBeCloseTo(5 / 70);
+    // bounce is visit-weighted; raw percentages are normalised to ratios (÷100) at ingestion
+    expect(search?.bounceRate).toBeCloseTo((0.005 * 46 + 0.0025 * 24) / 70);
+  });
+
   it('defaults null metrics to 0 and a missing dimension name to "unknown"', async () => {
     const client = fakeClient({
       data: [{ dimensions: [{ name: null }], metrics: [null, null, null, null] }],
