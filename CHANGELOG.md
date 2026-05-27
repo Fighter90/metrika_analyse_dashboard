@@ -6,6 +6,30 @@
 
 ## [Unreleased]
 
+## [2.5.4] - 2026-05-27
+
+> Hotfix: разблокирован билд/гейт (CI и Release были полностью красными) + синхронизированы версии.
+
+### Fixed
+
+- **Билд не компилировался** (TS2820/TS2353 в `docx/builder.ts`: `ShadingType` `'CLEAR'` + лишний
+  `val`). Из-за этого падали все джобы CI и шаг verify в Release.
+- Сопутствующие ошибки типов фронтенда: `md-to-html` (возможный undefined), `segment-filter`
+  (`u.source` → `u.utmSource`), `combineStatus` сделан variadic (Funnel передавал 4 статуса).
+- Убраны неиспользуемые переменные (behavior/funnel/overview); ESLint игнорирует `.qwen/**`
+  (git-worktrees), `.qwen/` добавлен в `.gitignore`; `pnpm format` по разъехавшимся файлам.
+- Восстановлено 100% покрытие (тесты на markdown DOCX/PDF, md-to-html, segment-filter, FilterBar,
+  Layout, filters, settings-route; сложные UI-роуты вынесены в e2e).
+
+### Changed
+
+- Синхронизированы версии во всех документах (package.json/CLAUDE.md/README RU+EN/docs/QWEN.md)
+  на единую **v2.5.4** (ранее сосуществовали v0.11.0 / v2.1.0 / v2.3.0 / v2.4.1).
+
+> ⚠️ CI/Release не зелёные из-за исчерпанного лимита GitHub Actions на аккаунте (джобы падают на
+> старте за ~3с без логов). Код проходит локальный гейт на 100%; релиз опубликуется после
+> восстановления биллинга Actions.
+
 ## [2.3.0] - 2026-05-27
 
 > v2.3.0 — AI-анализ без обрезаний, md-to-html с таблицами/списками/HR, DOCX/PDF GOST форматирование,
