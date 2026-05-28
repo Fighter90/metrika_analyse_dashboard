@@ -326,13 +326,17 @@ const LEADING_EMOJI_RE =
 const LEADING_NUM_RE = /^(?:\d+[.)]|Шаг\s+\d+\.|Раздел\s+\d+\.)\s*/iu;
 
 function sanitizeAiLine(line: string): string {
-  // Strip markdown heading/blockquote markers, leading emoji and self-numbering so no raw
-  // `##`/`####`/`>`/«🔴»/«1.» leaks into the ГОСТ document (D-EMOJI, D-DOUBLE-NUM). Markdown bullets
-  // («- »/«* ») are intentionally left intact — the DOCX/PDF renderers convert them into proper lists.
-  // `**bold**` is preserved for the renderers; emoji INSIDE a line (as an accent) are kept.
+  // Strip markdown heading/blockquote markers, leading emoji, self-numbering and HTML tags so no raw
+  // `##`/`####`/`>`/«🔴»/«1.»/`<strong>`/`<p>` leaks into the ГОСТ DOCX/PDF (D-EMOJI, D-DOUBLE-NUM,
+  // and the HTML-tag leak). `<strong>/<b>` → `**`, `<em>/<i>` → `*` so the renderers keep emphasis;
+  // any other tag (`<p>`,`<br>`,`<li>`…) is dropped. Markdown bullets («- »/«* ») are kept (renderers
+  // make real lists); `**bold**` is preserved; emoji INSIDE a line (as an accent) are kept.
   return line
     .replace(/^\s*#{1,6}\s+/, '')
     .replace(/^\s*>\s?/, '')
+    .replace(/<\s*\/?\s*(?:strong|b)\s*>/gi, '**')
+    .replace(/<\s*\/?\s*(?:em|i)\s*>/gi, '*')
+    .replace(/<[^>]*>/g, '')
     .replace(LEADING_EMOJI_RE, '')
     .replace(LEADING_NUM_RE, '')
     .trimEnd();
@@ -621,5 +625,14 @@ export function reportSections(s: ReportSnapshot): ReportSection[] {
     },
   );
 
-  return sections;
+  // Drop sections whose only content is an empty-state placeholder («Нет данных…», «Завершённых
+  // проверок пока нет», «Гипотезы не заведены…») — such heading-only sections are noise in the
+  // DOCX/PDF/preview. A section survives only if it has at least one meaningful (non-placeholder) line.
+  return sections.filter((sec) => {
+    const meaningful = sec.lines.filter((l) => l.trim() !== '' && !EMPTY_STATE_RE.test(l.trim()));
+    return meaningful.length > 0;
+  });
 }
+
+/** Lines that signal «no data / nothing yet» — used to drop empty heading-only sections. */
+const EMPTY_STATE_RE = /^(Нет данных|Завершённых проверок пока нет|Гипотезы не заведены)/;

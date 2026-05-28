@@ -223,7 +223,7 @@ export function OverviewView({
 
   if (stats.length === 0) return <EmptyState />;
 
-  const kpi = summarizeChannels(stats, b2bDeals ?? []);
+  const kpi = summarizeChannels(stats, b2bDeals ?? [], goalLabel?.isPaid ?? false);
   const weak = weakSpots(stats);
   const geoRows = geoDevice ? byCountry(geoDevice) : [];
   const devRows = geoDevice ? byDevice(geoDevice) : [];
@@ -272,7 +272,7 @@ export function OverviewView({
         <Kpi
           label="Gap до цели"
           value={formatInt(kpi.gap)}
-          hint={`${formatInt(kpi.b2bPaid)} оплачено из ${formatInt(kpi.target)}`}
+          hint={`${formatInt(kpi.paid)} оплачено из ${formatInt(kpi.target)}`}
         />
       </div>
 

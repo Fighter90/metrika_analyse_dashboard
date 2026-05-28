@@ -397,7 +397,7 @@ describe('reportSections — breakdowns, AI and empty states', () => {
     expect(findSection(s, (h) => h === 'Приложение с данными').join(' ')).toContain('CR 0.0%');
   });
 
-  it('shows empty-state copy for channels, UTM, geo, pages when nothing is present', () => {
+  it('drops empty-state sections (no data / nothing yet) — they are NOT in the report (v2.9.3)', () => {
     const empty: ReportSnapshot = {
       ...baseSnapshot,
       channels: [],
@@ -407,19 +407,18 @@ describe('reportSections — breakdowns, AI and empty states', () => {
       funnel: { visits: 0, b2cApplications: 0, b2bPipelineTickets: 0, b2bPaidTickets: 0 },
       breakdowns: { utm: [], geoDevice: [], entryPages: [], exitPages: [] },
     };
-    expect(findSection(empty, (h) => h === 'Каналы: структура трафика')[0]).toContain(
-      'Нет данных по каналам',
-    );
-    expect(findSection(empty, (h) => h === 'Топ источников UTM')[0]).toContain('Нет данных UTM');
-    expect(findSection(empty, (h) => h === 'Топ гео + устройства')[0]).toContain('Нет данных');
-    expect(findSection(empty, (h) => h === 'Топ страниц входа')[0]).toContain('Нет данных');
-    expect(findSection(empty, (h) => h === 'Топ страниц выхода')[0]).toContain('Нет данных');
-    // Decision Log always shows
-    expect(findSection(empty, (h) => h.startsWith('Deliver'))[0]).toContain('пока нет');
-    // Roadmap shows "no hypotheses" message
-    expect(findSection(empty, (h) => h.startsWith('Дорожная карта'))[0]).toContain(
-      'дорожной карты пока нет',
-    );
+    const headings = reportSections(empty).map((s) => s.heading);
+    // Heading-only «no data / nothing yet» sections must be absent.
+    expect(headings).not.toContain('Каналы: структура трафика');
+    expect(headings).not.toContain('Топ источников UTM');
+    expect(headings).not.toContain('Топ гео + устройства');
+    expect(headings).not.toContain('Топ страниц входа');
+    expect(headings).not.toContain('Топ страниц выхода');
+    expect(headings.some((h) => h.startsWith('Deliver'))).toBe(false);
+    expect(headings.some((h) => h.startsWith('Дорожная карта'))).toBe(false);
+    // Sections with real content survive.
+    expect(headings).toContain('Краткие итоги');
+    expect(headings).toContain('Приложение с данными');
   });
 
   it('includes the AI-анализ section only when aiNarrative is present', () => {
@@ -586,6 +585,21 @@ describe('reportSections — new sections', () => {
     // 35 lines + '' spacer + truncation note = 37
     expect(sec!.lines.length).toBeLessThanOrEqual(37);
     expect(sec!.lines.join('\n')).toContain('сокращён по лимиту');
+  });
+
+  it('converts/strips HTML tags so none leak into DOCX/PDF (v2.9.3)', () => {
+    const s: ReportSnapshot = {
+      ...baseSnapshot,
+      aiNarrative:
+        '## Каналы\n\n<strong>~180–200 новых заявок</strong> и <em>рост</em>.<br><p>Хвост</p>',
+    };
+    const text = reportSections(s)
+      .find((x) => x.heading === 'Каналы')!
+      .lines.join('\n');
+    expect(text).not.toMatch(/<[^>]+>/); // никаких HTML-тегов
+    expect(text).toContain('**~180–200 новых заявок**'); // <strong> → markdown bold
+    expect(text).toContain('*рост*'); // <em> → markdown italic
+    expect(text).toContain('Хвост'); // текст из <p> сохранён
   });
 });
 
